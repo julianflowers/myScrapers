@@ -3,9 +3,9 @@ Type: Package
 Title: Functions to extract data from PHE websites
 Version: 0.1.0
 Author: person("Julian", "Flowers", email = "julian.flowers@phe.gov.uk", role = c("aut", "cre"))
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Maintainer: The package maintainer <julian.flowers@phe.gov.uk>
+Description: Various functions which download data from PHE websites on .gov.uk
+    Use four spaces when indenting paragraphs within the Description
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
