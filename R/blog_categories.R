@@ -15,10 +15,10 @@ get_blog_categories <- function(url = "https://publichealthmatters.blog.gov.uk")
   
   cats <- map_chr(categories, c(5,1))
   
+  cats <- map_chr(cats, function(x) gsub("/", "", x))
   
-  
+  return(cats)
   
 }
 
-cats <- get_blog_categories()
-head(cats)
+

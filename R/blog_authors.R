@@ -14,9 +14,10 @@ get_blog_authors <- function(url = "https://publichealthmatters.blog.gov.uk"){
   authors <- str_split(authors, "/", n  = 5)
   
   auths <- map_chr(authors, c(5,1))
+  auths <- map_chr(auths, function(x) gsub("/", "", x))
   
   
-  
+  return(auths)
   
 }
 

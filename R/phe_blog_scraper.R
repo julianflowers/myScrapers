@@ -23,4 +23,4 @@ urls1 <- pages[grepl(category,pages)]
 
 }        
 
-urls2 <- phe_blog_scraper()
+
