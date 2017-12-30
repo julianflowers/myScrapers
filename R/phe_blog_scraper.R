@@ -1,7 +1,7 @@
 ## identify and download phe blogs
 
 
-phe_blog_scraper <- function(category = "duncan-selbie-friday-message"){
+get_blog_text <- function(category = "duncan-selbie-friday-message"){
 
     require(Rcrawler)
     require(rvest)
@@ -12,11 +12,11 @@ phe_blog_scraper <- function(category = "duncan-selbie-friday-message"){
     require(tidytext)
     require(quanteda)
 
-  url1 <- "https://publichealthmatters.blog.gov.uk/category/"
   
-  urls <- paste0(url1, category)
+url1 <- "https://publichealthmatters.blog.gov.uk/category/"
   
-
+urls <- paste0(url1, category)
+  
 pages <- LinkExtractor(urls)[[2]]
 
 urls1 <- pages[grepl(category,pages)]

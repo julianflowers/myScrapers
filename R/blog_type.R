@@ -1,10 +1,10 @@
-#e# get blog authors or categories
+#e# get blog authors or categories for a given url
 
-get_blog_authors <- function(url = "https://publichealthmatters.blog.gov.uk", type = "author" ){
+get_blog_type <- function(url = "https://publichealthmatters.blog.gov.uk", type = "author" ){
   
-  if(!type %in% c("categories", "author"))
+  if(!type %in% c("category", "author"))
      
-    stop ("type must be 'author' or 'categories'")
+    stop ("type must be 'author' or 'category'")
   
   library(Rcrawler)
   library(stringr)
@@ -13,7 +13,7 @@ get_blog_authors <- function(url = "https://publichealthmatters.blog.gov.uk", ty
   ## extracts urls from page
   getLinks <- LinkExtractor(url)[[2]]
   
-  links <- unique(getLinks[grepl("author",getLinks)])
+  links <- unique(getLinks[grepl(type ,getLinks)])
   
   links <- str_split(links, "/", n  = 5)
   
