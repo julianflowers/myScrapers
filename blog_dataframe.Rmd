@@ -1,0 +1,191 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+##Links and blogs
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE)
+
+library(myScrapers)
+library(tidyverse)
+
+```
+
+## get categories/ authors
+
+```{r}
+
+## get all categories or authors
+
+## categories
+category <- get_blog_type(type = "category")
+
+urls_all <- as.vector(paste0("https://publichealthmatters.blog.gov.uk/page/", 2:67, "/"))
+
+testcat <- map(urls_all, function(x) get_blog_type(x, type = "category"))
+
+testdfcat <- map(testcat, as.data.frame)
+
+dtcat <- bind_rows(testdfcat) 
+  
+
+categories <- dtcat %>%
+    rename(category = `.x[[i]]`) %>%
+  group_by(category) %>%
+  count(sort = TRUE)
+
+## authors
+auth <- get_blog_type()
+
+urls_all <- as.vector(paste0("https://publichealthmatters.blog.gov.uk/page/", 2:67, "/"))
+
+test <- map(urls_all, function(x) get_blog_type(x, type = "author"))
+
+testdf <- map(test, as.data.frame)
+
+dt <- bind_rows(testdf) 
+  
+
+authors <- dt %>%
+  group_by() %>%
+  select(category = `.x[[i]]`) %>%
+  arrange(category) %>%
+  slice(4:nrow(.))
+
+
+
+```
+
+
+## extract specific blogs
+
+```{r}
+library(rvest)
+
+
+### select category
+
+cko <- categories %>%
+  filter(category == "cko") %>%
+  pull(category)
+
+
+
+## create data frame of blogs by category
+
+blog_df_cat <- function(category = category, n = 7L){
+
+  
+n <- n  
+  
+#stop(!category %in% )
+url_1 <- paste0("https://publichealthmatters.blog.gov.uk/category/", category, "/")
+url_2 <- paste0("https://publichealthmatters.blog.gov.uk/category/", category, "/page/", 2:n, "/")
+
+
+## if there is only one page use n = 1 
+#ifelse(n=1, urls_comb <- url_1,  urls_comb <- c(url_1, url_2))
+
+blog_df <- data.frame()
+
+for(i in seq_along(urls_comb)){
+
+
+page <- read_html(urls_comb[i]) %>%
+  html_nodes("p")
+
+page2 <- html_text(page)%>%
+  str_replace_all("\n", "")
+
+ifelse(category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko" ), page3 <- page2[2:(length(page2)-3)], page3 <- page2[3:(length(page2)-3)]) 
+
+
+  
+
+titles <- read_html(urls_comb[i]) %>%
+  html_nodes(".entry-title")
+
+titles2 <- html_text(titles)
+
+blogs <- data.frame(title = titles2, text = page3) %>%
+  mutate_if(is.factor, as.character)
+
+
+blog_df <- bind_rows(blog_df, blogs)
+
+
+}
+
+blog_df
+
+}
+```
+
+
+
+```{r}
+blogs <- blog_df_cat(category = "priority2", n = 3)
+
+blogs
+```
+
+## tester
+```{r}
+library(rvest)
+
+
+### select category
+
+cko <- categories %>%
+  filter(category == "cko") %>%
+  pull(category)
+
+## create data frame of blogs by category
+
+
+url <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority1", "/")
+url1 <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority1", "/page/", 2:3, "/")
+# 
+urls_comb_test <- c(url, url1)
+# 
+blog_df_test <- data.frame()
+# 
+for(i in seq_along(urls_comb_test)){
+# 
+# 
+test_page <- read_html(urls_comb_test[i]) %>%
+   html_nodes("p")
+# 
+ test_page2 <- html_text(test_page)%>%
+   str_replace_all("\n", "")
+#   
+ #test_page2 <- test_page2[2:(length(test_page2)-3)]
+ 
+ ifelse(category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko"  ), test_page3 <- test_page2[2:(length(test_page2)-3)],test_page3 <- test_page2[3:(length(test_page2)-3)]) 
+ 
+
+ # 
+ test_titles <- read_html(urls_comb_test[i]) %>%
+  html_nodes(".entry-title")
+# 
+ test_titles2 <- html_text(test_titles)
+# 
+ 
+blogs_test <- data.frame(title = test_titles2, text = test_page3) %>%
+   mutate_if(is.factor, as.character)
+# 
+# 
+ blog_df_test <- bind_rows(blog_df_test, blogs_test)
+# 
+# 
+ }
+# 
+ blog_df_test
+# 
+
+```
+
+
+
