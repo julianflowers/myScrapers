@@ -22,14 +22,19 @@ library(tidyverse)
 ## categories
 category <- get_blog_type(type = "category")
 
+blog_type_extractor <- function(type = type){
 urls_all <- as.vector(paste0("https://publichealthmatters.blog.gov.uk/page/", 2:67, "/"))
 
-testcat <- map(urls_all, function(x) get_blog_type(x, type = "category"))
+testcat <- map(urls_all, function(x) get_blog_type(x, type = type))
 
 testdfcat <- map(testcat, as.data.frame)
 
 dtcat <- bind_rows(testdfcat) 
-  
+
+dtcat %>%
+  distinct()
+
+}
 
 categories <- dtcat %>%
     rename(category = `.x[[i]]`) %>%
@@ -47,6 +52,9 @@ testdf <- map(test, as.data.frame)
 
 dt <- bind_rows(testdf) 
   
+dt
+
+
 
 authors <- dt %>%
   group_by() %>%
@@ -61,7 +69,7 @@ authors <- dt %>%
 
 ## extract specific blogs
 
-```{r}
+```{r blog scraper}
 library(rvest)
 
 
@@ -77,7 +85,6 @@ cko <- categories %>%
 
 blog_df_cat <- function(category = category, n = 7L){
 
-  
 n <- n  
   
 #stop(!category %in% )
@@ -86,6 +93,8 @@ url_2 <- paste0("https://publichealthmatters.blog.gov.uk/category/", category, "
 
 
 ## if there is only one page use n = 1 
+
+ifelse(n == 1, urls_comb <- url_1, urls_comb <- c(url_1, url_2))
 #ifelse(n=1, urls_comb <- url_1,  urls_comb <- c(url_1, url_2))
 
 blog_df <- data.frame()
@@ -99,7 +108,7 @@ page <- read_html(urls_comb[i]) %>%
 page2 <- html_text(page)%>%
   str_replace_all("\n", "")
 
-ifelse(category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko" ), page3 <- page2[2:(length(page2)-3)], page3 <- page2[3:(length(page2)-3)]) 
+ifelse(!category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko", "duncan-selbie-friday-message" ), page3 <- page2[3:(length(page2)-3)], page3 <- page2[2:(length(page2)-3)]) 
 
 
   
@@ -109,11 +118,33 @@ titles <- read_html(urls_comb[i]) %>%
 
 titles2 <- html_text(titles)
 
-blogs <- data.frame(title = titles2, text = page3) %>%
+test_titles <- read_html(urls_comb_test[i]) %>%
+  html_nodes(".entry-title")
+ 
+ title_dates <- read_html(urls_comb_test[i]) %>%
+  html_nodes("a") %>%
+   html_attr("href") %>%
+   data.frame() 
+ 
+ colnames(title_dates) <- "url"
+ 
+ dates <- title_dates %>%
+   filter(!stringr::str_detect(url, "author")) %>%
+      filter(!stringr::str_detect(url, "category")) %>%
+         filter(!stringr::str_detect(url, "feed")) %>%
+      filter(!stringr::str_detect(url, "public-health-matters")) %>%
+
+      filter(stringr::str_detect(url, "publichealthmatters.blog.gov.uk/")) %>%
+   separate(url, c("root", "l",  "link", "year", "month", "day", "other"), sep = "/") %>%
+   select(year, month, day) %>%
+     unite(date,  c("year", "month", "day"), sep = "-") %>%
+   mutate(date = lubridate::ymd(date))
+
+blogs <- data.frame(title = titles2, text = page3, date = dates$date) %>%
   mutate_if(is.factor, as.character)
 
 
-blog_df <- bind_rows(blog_df, blogs)
+blog_df <- bind_rows(blog_df, blogs) %>% distinct()
 
 
 }
@@ -125,8 +156,8 @@ blog_df
 
 
 
-```{r}
-blogs <- blog_df_cat(category = "priority2", n = 3)
+```{r warning=FALSE}
+blogs <- blog_df_cat(category = "health-matters", n = 4)
 
 blogs
 ```
@@ -145,8 +176,8 @@ cko <- categories %>%
 ## create data frame of blogs by category
 
 
-url <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority1", "/")
-url1 <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority1", "/page/", 2:3, "/")
+url <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority5", "/")
+url1 <- paste0("https://publichealthmatters.blog.gov.uk/category/", "priority5", "/page/", 1:1, "/")
 # 
 urls_comb_test <- c(url, url1)
 # 
@@ -169,6 +200,27 @@ test_page <- read_html(urls_comb_test[i]) %>%
  # 
  test_titles <- read_html(urls_comb_test[i]) %>%
   html_nodes(".entry-title")
+ 
+ title_dates <- read_html(urls_comb_test[i]) %>%
+  html_nodes("a") %>%
+   html_attr("href") %>%
+   data.frame() 
+ 
+ colnames(title_dates) <- "url"
+ 
+ dates <- title_dates %>%
+   filter(!stringr::str_detect(url, "author")) %>%
+      filter(!stringr::str_detect(url, "category")) %>%
+         filter(!stringr::str_detect(url, "feed")) %>%
+      filter(!stringr::str_detect(url, "public-health-matters")) %>%
+
+      filter(stringr::str_detect(url, "publichealthmatters.blog.gov.uk/")) %>%
+   separate(url, c("root", "l",  "link", "year", "month", "day", "other"), sep = "/") %>%
+   select(year, month, day) %>%
+     unite(date,  c("year", "month", "day"), sep = "-") %>%
+   mutate(date = lubridate::ymd(date))
+
+
 # 
  test_titles2 <- html_text(test_titles)
 # 
@@ -177,7 +229,7 @@ blogs_test <- data.frame(title = test_titles2, text = test_page3) %>%
    mutate_if(is.factor, as.character)
 # 
 # 
- blog_df_test <- bind_rows(blog_df_test, blogs_test)
+ blog_df_test <- bind_rows(blog_df_test, blogs_test) %>% distinct()
 # 
 # 
  }

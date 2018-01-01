@@ -17,8 +17,7 @@ phe_blog_scraper <- function(category = category, n = 7L){
   ## if there is only one page use n = 1 
   
   ifelse(n == 1, urls_comb <- url_1, urls_comb <- c(url_1, url_2))
-  #ifelse(n=1, urls_comb <- url_1,  urls_comb <- c(url_1, url_2))
-  
+
   blog_df <- data.frame()
   
   for(i in seq_along(urls_comb)){
@@ -40,29 +39,29 @@ phe_blog_scraper <- function(category = category, n = 7L){
     
     titles2 <- html_text(titles)
     
-    test_titles <- read_html(urls_comb_test[i]) %>%
-      html_nodes(".entry-title")
+    #test_titles <- read_html(urls_comb[i]) %>%
+      #html_nodes(".entry-title")
     
-    title_dates <- read_html(urls_comb_test[i]) %>%
-      html_nodes("a") %>%
-      html_attr("href") %>%
-      data.frame() 
-    
-    colnames(title_dates) <- "url"
-    
-    dates <- title_dates %>%
-      filter(!stringr::str_detect(url, "author")) %>%
-      filter(!stringr::str_detect(url, "category")) %>%
-      filter(!stringr::str_detect(url, "feed")) %>%
-      filter(!stringr::str_detect(url, "public-health-matters")) %>%
-      
-      filter(stringr::str_detect(url, "publichealthmatters.blog.gov.uk/")) %>%
-      separate(url, c("root", "l",  "link", "year", "month", "day", "other"), sep = "/") %>%
-      select(year, month, day) %>%
-      unite(date,  c("year", "month", "day"), sep = "-") %>%
-      mutate(date = lubridate::ymd(date))
-    
-    blogs <- data.frame(title = titles2, text = page3, date = dates$date) %>%
+    # title_dates <- read_html(urls_comb[i]) %>%
+    #   html_nodes("a") %>%
+    #   html_attr("href") %>%
+    #   data.frame()
+    # 
+    # colnames(title_dates) <- "url"
+    # 
+    # dates <- title_dates %>%
+    #   filter(!stringr::str_detect(url, "author")) %>%
+    #   filter(!stringr::str_detect(url, "category")) %>%
+    #   filter(!stringr::str_detect(url, "feed")) %>%
+    #   filter(!stringr::str_detect(url, "public-health-matters")) %>%
+    # 
+    #   filter(stringr::str_detect(url, "publichealthmatters.blog.gov.uk/")) %>%
+    #   separate(url, c("root", "l",  "link", "year", "month", "day", "other"), sep = "/") %>%
+    #   select(year, month, day) %>%
+    #   unite(date,  c("year", "month", "day"), sep = "-") %>%
+    #   mutate(date = lubridate::ymd(date))
+
+    blogs <- data.frame(title = titles2, text = page3) %>%
       mutate_if(is.factor, as.character)
     
     
@@ -75,4 +74,4 @@ phe_blog_scraper <- function(category = category, n = 7L){
   
 }     
 
-
+phe_blog_scraper("cko", n = 5)

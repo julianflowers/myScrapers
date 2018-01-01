@@ -1,0 +1,88 @@
+---
+title: "Extracting information from PHE blogs and publications"
+author: "Julian Flowers"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{phe blog extraction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+PHE publishes a range of information to <https://www.gov.uk/phe> inlcuding blogs, statistics and other publications.
+
+This vignette introduces an internal PHE R package `myScrapers` which includes tools to extract published information from the .gov.uk site. The tools include:
+
+* `blog_type_extractor` which pulls a dataframe of blog topics or authors
+* `phe_blog_scraper` which allows the user to retrieve the text of blogs by topic into a tidy data frame.
+
+These tools are intended to help text mining and analysis of published content, and assist developing outputs such as products and services catalogues.
+
+The functions are assembled as an R package which is currently available on github.
+
+
+## Getting started
+
+The first step is to install the package. This can be achieved with the code below:
+
+```{r}
+
+devtools::install_github("julianflowers/myScrapers")
+library(myScrapers)
+
+
+```
+
+## Blog topics
+
+We can obtain a table of blog topic categories.
+
+```{r, warning=FALSE}
+
+
+ 
+ds <- blog_type_extractor(type = "category")
+
+ds %>%
+  select(topic = `.x[[i]]`) %>%
+  arrange(topic)
+
+```
+
+
+## Blog authors
+
+We can obtain a table of blog authors.
+
+```{r, warning=FALSE}
+
+
+ 
+ds <- blog_type_extractor(type = "author")
+
+ds %>%
+  select(author = `.x[[i]]`) %>%
+  arrange(author) %>%
+  slice(4:nrow(.)) 
+
+```
+
+
+## Blog text
+
+```{r}
+
+blog <- phe_blog_scraper("health-in-a-changing-climate", n = 3)
+
+
+blog
+
+```
+
