@@ -39,6 +39,14 @@ phe_blog_scraper <- function(category = category, n = 7L){
     
     titles2 <- html_text(titles)
     
+    date <- stringr::str_split(titles, pattern = "/")
+    
+    year <- map(date,  4)
+    month <- map(date, 5)
+    day <- map(date, 6)
+    
+    date1 <- paste(year, month, day, sep = "-")
+    
     #test_titles <- read_html(urls_comb[i]) %>%
       #html_nodes(".entry-title")
     
@@ -61,7 +69,7 @@ phe_blog_scraper <- function(category = category, n = 7L){
     #   unite(date,  c("year", "month", "day"), sep = "-") %>%
     #   mutate(date = lubridate::ymd(date))
 
-    blogs <- data.frame(title = titles2, text = page3) %>%
+    blogs <- data.frame(title = titles2, text = page3, date = lubridate::ymd(date1), category = category) %>%
       mutate_if(is.factor, as.character)
     
     
@@ -74,4 +82,4 @@ phe_blog_scraper <- function(category = category, n = 7L){
   
 }     
 
-phe_blog_scraper("cko", n = 5)
+phe_blog_scraper("cko", n = 7)
