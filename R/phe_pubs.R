@@ -1,6 +1,6 @@
 ## creates a data table of PHE stats and publications on .gov.uk
 
-phe_catalogue <- function(url, pages = NULL) {
+phe_catalogue <- function(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = NULL) {
   
   
   
@@ -11,11 +11,6 @@ phe_catalogue <- function(url, pages = NULL) {
   library(tidyverse)
   
   library(stringr)
-  
-  
-  
-  
-  
   
   
   #url <- url
@@ -34,16 +29,10 @@ phe_catalogue <- function(url, pages = NULL) {
   
   uplink <- map(Rcrawler::LinkExtractor(url)[2], as.data.frame)
   
-  phe_pubs  <- as.data.frame(rbind_list(pubs_counts, uplink) )
-  
-  
-  
-  
-  
+  phe_pubs  <- as.data.frame(bind_rows(pubs_counts, uplink) )
   
   
   colnames(phe_pubs) <- c("Links")
-  
   
   
   phe_national_pubs <- phe_pubs %>%
@@ -55,11 +44,7 @@ phe_catalogue <- function(url, pages = NULL) {
                              str_detect(Links, "publications/") ~ "publication"),
            
            link = paste0("<a href =",  Links,  ">Links</a>"))
-  
-  
-  
-  #urls <- createLink(phe_national_pubs$Links[1:20])
-  
+
   
   
   phe_national_pubs_table <- phe_national_pubs %>%
@@ -73,15 +58,8 @@ phe_catalogue <- function(url, pages = NULL) {
       buttons = c('csv', 'excel', 'pdf')))
   
   
-  
-  
-  
+
   return(phe_national_pubs_table) 
-  
-  
-  
-  
-  
   
   
 }

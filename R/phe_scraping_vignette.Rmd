@@ -77,12 +77,44 @@ ds %>%
 
 ## Blog text
 
-```{r}
+We can extract blog posts for any given category e.g.
 
-blog <- phe_blog_scraper("health-in-a-changing-climate", n = 3)
+```{r}
+cat <- ""
+
+blog <- phe_blog_scraper(cat, n = 7)
 
 
 blog
+
+```
+
+## Plots
+
+We can then undertake simple analysis - for example plot category counts
+
+```{r}
+
+
+blog %>%
+  group_by(quarter = zoo::as.yearqtr(date)) %>%
+  count() %>%
+  ggplot(aes(quarter, n)) +
+  geom_col() +
+  labs(title = "CKO blogs - quarterly count") +
+  govstyle::theme_gov()
+
+
+
+```
+
+## PHE publications
+
+PHE is planning to create a products and services catalogue. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
+
+```{r}
+
+phe_catalogue()
 
 ```
 
