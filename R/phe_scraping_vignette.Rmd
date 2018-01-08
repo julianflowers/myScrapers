@@ -12,10 +12,12 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", 
+  cache = TRUE,
+  warning = FALSE
 )
 
-library(tidyverse)
+library(tidyverse, quietly = TRUE)
 
 ```
 
@@ -25,6 +27,7 @@ This vignette introduces an internal PHE R package `myScrapers` which includes t
 
 * `blog_type_extractor` which pulls a dataframe of blog topics or authors
 * `phe_blog_scraper` which allows the user to retrieve the text of blogs by topic into a tidy data frame.
+* `phe_catalogue` which downloads an interactive table of PHE publications.
 
 These tools are intended to help text mining and analysis of published content, and assist developing outputs such as products and services catalogues.
 
@@ -35,9 +38,9 @@ The functions are assembled as an R package which is currently available on gith
 
 The first step is to install the package. This can be achieved with the code below:
 
-```{r}
-
-devtools::install_github("julianflowers/myScrapers")
+```{r message=FALSE, warning=FALSE}
+library(devtools)
+install_github("julianflowers/myScrapers", build_vignettes =TRUE)
 library(myScrapers)
 
 
@@ -83,9 +86,9 @@ ds %>%
 We can extract blog posts for any given category e.g.
 
 ```{r}
-cat <- "priority1"
+cat <- "cko"
 
-blog <- phe_blog_scraper(cat, n = 3)
+blog <- phe_blog_scraper(cat, n = 7)
 
 
 blog
@@ -96,7 +99,7 @@ blog
 
 We can then undertake simple analysis - for example plot category counts
 
-```{r}
+```{r fig.height=6, fig.width=6}
 
 
 blog %>%
