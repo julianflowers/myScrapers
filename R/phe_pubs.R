@@ -52,3 +52,4 @@ return(phe_national_pubs_table)
   
 }
 
+phe_catalogue("https://www.gov.uk/government/publications?departments%5B%5D=nhs-commissioning-board", pages = 2:90)
