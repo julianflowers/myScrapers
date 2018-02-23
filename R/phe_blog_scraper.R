@@ -82,4 +82,4 @@ phe_blog_scraper <- function(category = category, n = 7L){
   
 }     
 
-phe_blog_scraper("cko", n = 7)
+
