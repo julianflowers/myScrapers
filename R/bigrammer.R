@@ -3,6 +3,7 @@
 
 create_bigrams <- function(ds, group){
   require(tidytext)
+  require(tidyverse)
   group <- enquo(group)
   ds %>%
     group_by(!!group) %>%
@@ -17,14 +18,3 @@ create_bigrams <- function(ds, group){
 
 
 
-mlph_bigram %>%
-  group_by(year, bigram) %>%
-  count(sort = TRUE) %>%
-  filter(n > 100) %>%
-  ggplot(aes(year, n)) +
-  geom_col() +
-  facet_wrap(~bigram, scales = "free") +
-  govstyle::theme_gov() +
-  theme(strip.text.x = element_text(size = rel(.5)), 
-        axis.text.x = element_text(size = rel(.5)))
-    
