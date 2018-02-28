@@ -29,7 +29,9 @@ phe_blog_scraper <- function(category = category, n = 7L){
     page2 <- html_text(page)%>%
       str_replace_all("\n", "")
     
-    ifelse(!category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko", "duncan-selbie-friday-message" ), page3 <- page2[3:(length(page2)-3)], page3 <- page2[2:(length(page2)-3)]) 
+    page2 <- bind_rows(page2)
+    
+    ifelse(!category %in% c("health-matters", "health-profile-for-england", "the-week-at-phe", "health-in-a-changing-climate", "cko/public-health-data-cko", "duncan-selbie-friday-message"), page3 <- page2[3:(length(page2)-3)], page3 <- page2[2:(length(page2)-3)]) 
     
     
     
@@ -82,4 +84,3 @@ phe_blog_scraper <- function(category = category, n = 7L){
   
 }     
 
-phe_blog_scraper("cko", n = 7)
