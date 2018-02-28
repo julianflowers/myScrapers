@@ -1,6 +1,6 @@
 ## creates a data table of PHE stats and publications on .gov.uk
 
-phe_catalogue <- function(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:90) {
+phe_catalogue <- function(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:n, n=91) {
   
 library(Rcrawler)
 library(rvest)
@@ -9,7 +9,7 @@ library(stringr)
 
 
 first_page <- url
-sub_pages <- paste0(first_page,"&page=", 2:90)    
+sub_pages <- paste0(first_page,"&page=", 2:n)    
 #url <- url
 
 pubs <- map(sub_pages, Rcrawler::LinkExtractor)
