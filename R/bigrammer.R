@@ -1,12 +1,11 @@
 
 ## bigram maker
 
-create_bigrams <- function(ds, group = group, text){
+create_bigrams <- function(ds, text){
   require(tidytext)
   require(tidyverse)
-  group <- enquo(group)
+ text <- enquo(text)
   ds %>%
-    group_by(!!group) %>%
     unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
     separate(bigram, c("w1", "w2"), sep = " ") %>%
     filter(!w1 %in% stop_words$word) %>%
