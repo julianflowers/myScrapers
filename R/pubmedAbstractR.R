@@ -1,6 +1,6 @@
 ## function for downloading abstracts from pubmed
 
-pubmedAbstractR <- function(search, n = 1000, start = 2000, end = 2017, db = "pubmed"){
+pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pubmed"){
   
   require(RISmed)
   require(tidyverse)
