@@ -1,7 +1,7 @@
 
 ## bigram maker
 
-create_bigrams <- function(ds, group = NULL, text){
+create_bigrams <- function(ds, group = group, text){
   require(tidytext)
   require(tidyverse)
   group <- enquo(group)
