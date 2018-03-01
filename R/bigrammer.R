@@ -1,7 +1,7 @@
 
 ## bigram maker
 
-create_bigrams <- function(ds, group){
+create_bigrams <- function(ds, group = NULL, text){
   require(tidytext)
   require(tidyverse)
   group <- enquo(group)
@@ -17,4 +17,4 @@ create_bigrams <- function(ds, group){
 }
 
 
-
+myScrapers::
