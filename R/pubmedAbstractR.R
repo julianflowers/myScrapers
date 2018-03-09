@@ -20,7 +20,7 @@ s1 <- EUtilsSummary(search,
                       maxdate = end)
 
 comment <- glue::glue("Please wait...Your query is ", {s1@querytranslation}, ". This returns ", {s1@count}, " abstracts. ", 
-                      "By default 1000 abstracts are downloaded. You downloaded", n, " abstracts. To retrieve more set 'n =' argument to the desired value")
+                      "By default 1000 abstracts are downloaded. You downloaded ", n, " abstracts. To retrieve more set 'n =' argument to the desired value")
 
 print(comment)
   
