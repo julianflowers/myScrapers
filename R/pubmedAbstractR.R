@@ -28,14 +28,13 @@ fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
-abstracts <- data.frame(title = fetch@ArticleTitle,
+abstracts <- data.frame(cbind(title = fetch@ArticleTitle,
                           author = fetch@Author,
                           mesh = fetch@Mesh, 
                           abstract = fetch@AbstractText,
                            journal = fetch@Title,
                            DOI = fetch@PMID,
-                           year = fetch@YearPubmed) %>%
-     mutate(abstract = as.character(abstract))
+                           year = fetch@YearPubmed) )
 
 
 
