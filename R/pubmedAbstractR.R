@@ -30,7 +30,7 @@ fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
   
 abstracts <- data.frame(title = fetch@ArticleTitle,
                           author = fetch@Author,
-                          mesh = fetch@MESH, 
+                          mesh = fetch@Mesh, 
                           abstract = fetch@AbstractText,
                            journal = fetch@Title,
                            DOI = fetch@PMID,
