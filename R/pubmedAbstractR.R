@@ -26,14 +26,16 @@ print(comment)
   
 fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 
-abstracts <- bibliometrix::pubmed2df(fetch)
+#abstracts <- bibliometrix::pubmed2df(fetch)
   
-# abstracts <- data.frame(title = fetch@ArticleTitle,
-#                           abstract = fetch@AbstractText, 
-#                           journal = fetch@Title,
-#                           DOI = fetch@PMID, 
-#                           year = fetch@YearPubmed) %>%
-#     mutate(abstract = as.character(abstract))
+abstracts <- data.frame(title = fetch@ArticleTitle,
+                          author = fetch@Author,
+                          mesh = fetch@MESH, 
+                          abstract = fetch@AbstractText,
+                           journal = fetch@Title,
+                           DOI = fetch@PMID,
+                           year = fetch@YearPubmed) %>%
+     mutate(abstract = as.character(abstract))
 
 
 
