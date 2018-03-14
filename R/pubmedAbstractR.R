@@ -26,17 +26,28 @@ print(comment)
   
 fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 
+
+
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
-abstracts <- data.frame(cbind(title = fetch@ArticleTitle,
-                          author = fetch@Author,
-                          mesh = fetch@Mesh, 
+DOI = fetch@PMID
+abstracts <- as.tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
                            journal = fetch@Title,
-                           DOI = fetch@PMID,
-                           year = fetch@YearPubmed) )
+                           DOI,
+                           year = fetch@YearPubmed))
 
+mesh <- map(fetch@Mesh,  "Heading") %>%
+  map(., data.frame) 
 
+DOI -> names(mesh)
+
+mesh <- mesh %>%
+  bind_rows(., .id = "DOI") %>%
+  rename(keyword = .x..i..) %>%
+  data.frame()
+
+abstracts <- left_join(abstracts, mesh)
 
 ## returns latest 1000 abstracts unless n value changed   
 abstracts           
