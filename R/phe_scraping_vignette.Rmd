@@ -86,9 +86,9 @@ ds %>%
 We can extract blog posts for any given category e.g.
 
 ```{r}
-cat <- "cko"
+cat <- "mythbuster"
 
-blog <- phe_blog_scraper(cat, n = 7)
+blog <- phe_blog_scraper(cat, n = 1)
 
 
 blog
@@ -113,6 +113,22 @@ blog %>%
 
 
 ```
+## Text analysis
+
+We can take the outputs pf the blog_scraper and analyse the text. There are 3 really useful R packages for this `tm`, `tidytext` and `quanteda`.
+
+```{r, message=FALSE}
+library(quanteda)
+
+blog_corp <- corpus(blog)
+
+blog_corp[2]
+
+
+
+```
+
+
 
 ## PHE publications
 
