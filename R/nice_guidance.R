@@ -1,35 +1,3 @@
-require(rvest)
-require(Rcrawler)
-require(tidyverse)
-
-nice <- "https://www.nice.org.uk/guidance/ph"
-
-niceurls <-paste0(nice, 1:70)
-
-t <- map(niceurls[11], function(x) LinkExtractor(x))
-t[2]
-
-LinkExtractor(niceurls[65])[2]
-
-t2 <- t[2]
-
-t3 <- t2[[1]][grepl("ph1", t2[[1]])]
-
-
-test <- read_html(t3[6]) %>%
-  html_nodes(".span9") %>%
-  html_text()
-
-head <- read_html(t3[6]) %>%
-  html_nodes("h1") %>%
-  html_text()
-
-date <- read_html(t3[6]) %>%
-  html_nodes(".published-date") %>%
-  html_text() %>%
-  str_replace_all("\\n", "") %>%
-  tm::stripWhitespace()
-
 
 
 ## pseudo code for nice_scraper
