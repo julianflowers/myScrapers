@@ -52,4 +52,4 @@ return(phe_national_pubs_table)
   
 }
 
-phe_catalogue("https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", n = 100)
+get_phe_catalogue("https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", n = 100)
