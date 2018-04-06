@@ -4,7 +4,6 @@ pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pub
   
   require(RISmed)
   require(tidyverse)
-  require(bibliometrix)
   
   search <- search
   n <- n
