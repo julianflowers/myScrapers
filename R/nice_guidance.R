@@ -1,5 +1,6 @@
-library(rvest)
-library(Rcrawler)
+require(rvest)
+require(Rcrawler)
+require(tidyverse)
 
 nice <- "https://www.nice.org.uk/guidance/ph"
 
