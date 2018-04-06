@@ -1,28 +1,15 @@
-#e# get blog authors or categories
+#e# get blog authors
 
-get_blog_authors <- function(url = "https://publichealthmatters.blog.gov.uk", type = "author" ){
+get_blog_authors <- function(url) {
   
-  if(!type %in% c("categories", "author"))
-     
-    stop ("type must be 'author' or 'categories'")
+  require(Rcrawler)
   
-  library(Rcrawler)
-  library(stringr)
-  library(tidyverse)
+  links <- map(urls, function(x) Rcrawler::LinkExtractor(x)[2])
+  links_flat <- flatten(links)
+  cat_links <- map(links_flat, function(x) x[grepl("author", x)])
   
-  ## extracts urls from page
-  getLinks <- LinkExtractor(url)[[2]]
+  cat <- map(cat_links, function(x) str_split(x, "/"))
   
-  links <- unique(getLinks[grepl("author",getLinks)])
-  
-  links <- str_split(links, "/", n  = 5)
-  
-  links1 <- map_chr(links, c(5,1))
-  links1 <- map_chr(links1, function(x) gsub("/", "", x))
-  
-  
-  return(links1)
+  cat_list <- map_chr(flatten(cat), 5) %>% unique()
   
 }
-
-

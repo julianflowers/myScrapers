@@ -1,24 +1,16 @@
 #e# get blog categories
 
-get_blog_categories <- function(url = "https://publichealthmatters.blog.gov.uk"){
+# categories - get a list of ph matters categories
+get_blog_categories <- function(url) {
   
+  require(Rcrawler)
   
-  library(Rcrawler)
-  library(stringr)
-  library(tidyverse)
+  links <- map(urls, function(x) Rcrawler::LinkExtractor(x)[2])
+  links_flat <- flatten(links)
+  cat_links <- map(links_flat, function(x) x[grepl("category", x)])
   
-  getLinks <- LinkExtractor(url)[[2]]
+  cat <- map(cat_links, function(x) str_split(x, "/"))
   
-  categories <- unique(getLinks[grepl("category",getLinks)])
-  
-  categories <- str_split(categories, "/", n  = 5)
-  
-  cats <- map_chr(categories, c(5,1))
-  
-  cats <- map_chr(cats, function(x) gsub("/", "", x))
-  
-  return(cats)
+  cat_list <- map_chr(flatten(cat), 5) %>% unique()
   
 }
-
-
