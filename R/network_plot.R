@@ -1,3 +1,5 @@
+## Draws a network plot of documents
+
 create_network_plot <- function(ds, title = "Network plot of documents", subtitle = "", layout = "fr"){
   
   require(tidyverse, quietly = TRUE)

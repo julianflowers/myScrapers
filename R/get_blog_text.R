@@ -2,6 +2,9 @@
 
 get_blog_text <- function(url){
   
+  require(rvest)
+  require(tidyverse)
+  
   page <- read_html(url) %>%
     html_nodes(".entry-content") %>%
     html_text() %>%
@@ -10,7 +13,6 @@ get_blog_text <- function(url){
     paste(.,  collapse = ";") %>%
     cbind(url)
 
-  
 }
 
 

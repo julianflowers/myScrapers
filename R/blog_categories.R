@@ -4,8 +4,9 @@
 get_blog_categories <- function(url) {
   
   require(Rcrawler)
+  require(tidyverse)
   
-  links <- map(urls, function(x) Rcrawler::LinkExtractor(x)[2])
+  links <- map(url, function(x) Rcrawler::LinkExtractor(x)[2])
   links_flat <- flatten(links)
   cat_links <- map(links_flat, function(x) x[grepl("category", x)])
   
