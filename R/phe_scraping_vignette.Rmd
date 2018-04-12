@@ -14,129 +14,261 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>", 
   cache = TRUE,
-  warning = FALSE
+  warning = FALSE, 
+  fig.width = 8,
+  fig.height = 6
 )
 
 library(tidyverse, quietly = TRUE)
+library(rvest)
+
 
 ```
 
 PHE publishes a range of information to <https://www.gov.uk/phe> inlcuding blogs, statistics and other publications.
 
-This vignette introduces an internal PHE R package `myScrapers` which includes tools to extract published information from the .gov.uk site. The tools include:
+This vignette introduces an internal PHE R package `myScrapers` which includes tools to extract published public health information from:
+
+* NHS Digital
+* NICE Public Health Guidance
+* .GOV.UK
+
+The functions offered include 
 
 * `blog_type_extractor` which pulls a dataframe of blog topics or authors
 * `phe_blog_scraper` which allows the user to retrieve the text of blogs by topic into a tidy data frame.
-* `phe_catalogue` which downloads an interactive table of PHE publications.
+* `phe_pubs` which downloads an interactive table of PHE publications on .GOV.UK
+* `get_nhsd_pubs`, `get_NHSD_header`, `get_NHSD_sheets`,`get_NHSD_metadata`,`get_NHSD_header` which can be combined to identify published public health spreadsheets on the NHS Digital website
+* `get_nice_guidance` which downloads as a single file, recommendations from NICE public health guidance.
 
-These tools are intended to help text mining and analysis of published content, and assist developing outputs such as products and services catalogues.
+These tools are intended to help text mining and analysis of published content, to assist developing outputs such as products and services catalogues, and to make it easier to identify public health content at NHS Digital.
 
-The functions are assembled as an R package which is currently available on github.
+The functions are assembled as an R package which is currently available on github at https://github.com/julianflowers/myScrapers.
 
 
 ## Getting started
 
 The first step is to install the package. This can be achieved with the code below:
 
-```{r message=FALSE, warning=FALSE}
+```{r libraries, message=FALSE, warning=FALSE}
 library(devtools)
-install_github("julianflowers/myScrapers", build_vignettes =TRUE)
+if(!require("myScrapers"))install_github("julianflowers/myScrapers", build_vignettes =TRUE)
 library(myScrapers)
 
 
 ```
 
-## Blog topics
+## Public health content on NHS Digital
 
-We can obtain a table of blog topic categories.
+Identified PH content is available from https://digital.nhs.uk/article/4375/Public-health which give the following page which is a search spread over 3 pages.
 
-```{r, warning=FALSE}
+![](../Screenshot 2018-04-06 10.32.43.png)
 
+We can set up the URLs to be scraped:
 
- 
-ds <- blog_type_extractor(type = "category")
+```{r nhsd-pub-urls}
 
-ds %>%
-  select(topic = `.x[[i]]`) %>%
-  arrange(topic)
+url <- "https://digital.nhs.uk/article/4375/Public-health"
+url1 <- paste0(url ,"?p=", 2:3)
+links <- c(url, url1)
+links
+
+```
+
+Then use the `get_nhsd_pubs` function to identify a list of relevant publications. We use the `purrr::map` function to apply the extraction function to each page.
+
+```{r get-nhsd-links}
+ph_pubs <- map(links, function(x) get_nhsd_pubs(x))
+
+test <- flatten(ph_pubs) %>% na.omit()
+
+test[1:3]
+```
+
+Next, we can identify the links for spreadsheets from these pages, and also extract metadata and titles and create a tabular output.
+
+```{r make-data-frame-spreadsheet}
+# Identify spreadsheets, headers and descriptions
+
+xls <- map(test, function(x) get_nhsd_sheets(x))
+xls1 <- map(xls, data.frame)
+xls2 <- map_df(xls1, bind_rows)
+colnames(xls2) <- c("xls", "url")
+
+head <- map(test, function(x) get_nhsd_header(x)) 
+head1 <- map(head, data.frame)
+head2 <- map_df(head1, bind_rows)
+colnames(head2) <- c("title", "url")
+
+meta <- map(test, function(x) get_nhsd_metadata(x))
+meta1 <- map(meta, data.frame)
+meta2 <- map_df(meta1, bind_rows)
+colnames(meta2) <- c("description", "url")
+
+left_join(head2, meta2) %>%
+  left_join(xls2) %>%
+  mutate(xls = paste0("<a href =",  xls,  ">xls</a>")) %>%
+  mutate(description = str_replace_all(description, "Summary", "")) %>%
+  DT::datatable(rownames = FALSE, escape = FALSE, filter = "top", extensions = 'Buttons', options = list(
+     
+    columnDefs = list(list(autowidth = TRUE, width = '10%', targets = list(1, 2))),
+    scrollX = TRUE, 
+    pageLength = 25, 
+    dom = 'Bfrtip',
+    buttons = c('csv', 'excel', 'pdf'))) 
+
 
 ```
 
 
-## Blog authors
 
-We can obtain a table of blog authors.
+# PHE Blogs
 
-```{r, warning=FALSE}
+The URL for PHE blogs is "https://publichealthmatters.blog.gov.uk".
 
+We can obtain a table of blog topic categories or authors...
 
+```{r phe-blog-urls, warning=FALSE}
+
+url <- "https://publichealthmatters.blog.gov.uk"
+url1 <- paste0(url,  "/page/", 2:73)
+urls <- c(url, url1)
+
+cats <- get_blog_categories(urls)
  
-ds <- blog_type_extractor(type = "author")
+cats
+```
 
-ds %>%
-  select(author = `.x[[i]]`) %>%
-  arrange(author) %>%
-  slice(4:nrow(.)) 
 
+```{r get-authors, warning=FALSE}
+
+url <- "https://publichealthmatters.blog.gov.uk"
+
+authors <- get_blog_authors(url)
+ 
+authors
 ```
 
 
 ## Blog text
 
-We can extract blog posts for any given category e.g.
+We can extract blog posts for any given category e.g. *the-week-at-phe*
 
-```{r}
-cat <- "mythbuster"
+```{r get-blog-text}
+n <- 6
+url <- "https://publichealthmatters.blog.gov.uk/category/the-week-at-phe/"
+url1 <- paste0(url, "/page/", 2:n)
+ifelse( n>1, urls <- c(url, url1), urls <- url)
+#cat <- "local-authority-public-health/"
+links <- map(urls, function(x) get_blog_links(x))
+links1 <-  flatten(links) %>% unique() %>% map_chr(1)
+links1 <- links1[-11]
+blogs <- map(links1, function(x) get_blog_text(x))
+ blogs1 <- map(blogs, data.frame)
+ blogs2 <- map_df(blogs1, bind_rows)
+colnames(blogs2) <- c("text", "url")
+ 
 
-blog <- phe_blog_scraper(cat, n = 1)
+palette <- RColorBrewer::brewer.pal(10, rev("Spectral"))
 
-
-blog
-
+blogs2 %>%
+  create_bigrams(text) %>%
+  group_by(bigram) %>%
+  count(sort=TRUE) %>%
+  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity")) %>%
+  with(., wordcloud::wordcloud(bigram, n, colors = palette, random.order = FALSE, random.color = FALSE, max.words = "Inf", rot.per = 0.4, scale = c(4, 0.1)))
+ 
 ```
 
-## Plots
+or Duncan's friday message
 
-We can then undertake simple analysis - for example plot category counts
+```{r friday-message}
+n <- 6
+url <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
+url1 <- paste0(url, "/page/", 2:n)
+ifelse( n>1, urls <- c(url, url1), urls <- url)
+#cat <- "local-authority-public-health/"
+links <- map(urls, function(x) get_blog_links(x))
+links1 <-  flatten(links) %>% unique() %>% map_chr(1)
+links1 <- links1[-11]
+blogs <- map(links1, function(x) get_blog_text(x))
+ blogs1 <- map(blogs, data.frame)
+ blogs2 <- map_df(blogs1, bind_rows)
+colnames(blogs2) <- c("text", "url")
+ 
 
-```{r fig.height=6, fig.width=6}
+palette <- RColorBrewer::brewer.pal(11, "Spectral")
 
-
-blog %>%
-  group_by(quarter = zoo::as.yearqtr(date)) %>%
-  count() %>%
-  ggplot(aes(quarter, n)) +
-  geom_col() +
-  labs(title = "CKO blogs - quarterly count") +
-  govstyle::theme_gov()
-
-
-
+blogs2 %>%
+  create_bigrams(text) %>%
+  group_by(bigram) %>%
+  count(sort=TRUE) %>%
+  ungroup() %>%
+  mutate(bigram = tm::removeNumbers(bigram)) %>%
+  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity", "friday messages", "wishes friday")) %>%
+  with(., wordcloud::wordcloud(bigram, n, colors = palette, random.order = FALSE, random.color = FALSE, max.words = "Inf", rot.per = 0.4, scale = c(4, 0.1)))
+ 
 ```
-## Text analysis
 
-We can take the outputs pf the blog_scraper and analyse the text. There are 3 really useful R packages for this `tm`, `tidytext` and `quanteda`.
 
-```{r, message=FALSE}
+```{r network-plot}
+library(igraph)
+library(ggraph)
+
+bigrams <- create_bigrams(blogs2, text)
+
+bigrams <- bigrams %>%
+  separate(url, remove = FALSE, c("root", "name", "cat", "message",  "day", "month", "year" ), sep = "-") %>%
+  mutate(year = str_replace_all(year, "/", "")) %>%
+  unite(date, day, month, year, sep ="-") %>%
+  select(date, bigram, n)
+
+big_count <- bigrams %>%
+  group_by(date, bigram) %>%
+  count(sort = TRUE) %>%
+  #separate(bigram, c("word1", "word2")) %>%
+  filter(n >1)
+
+big_graph <- big_count %>%
+  graph_from_data_frame()
+
+
+ggraph(big_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n)) +
+  geom_node_point(color = "green") +
+  geom_node_text(aes(label = name), size = rel(3), alpha = 0.7, colour = "black", vjust = 1, hjust = 1)+
+  theme_void() +
+  theme(legend.position = "bottom") +
+  labs(title = "Network plot of Friday messages ")
+```
+
+
+
+```{r netowrk-quanteda}
 library(quanteda)
+library(tm)
 
-blog_corp <- corpus(blog)
+blog_corp <- quanteda::corpus(blogs2$text)
+dfm_phe <- quanteda::dfm(blog_corp, remove = c(stopwords("en"), "government", "phe", "health", "uploads", "harlow", "nhs", "england", "the_nhs", "phe_harlow", "attachment_data", "victoria", "london", "swh", "eu"), remove_punct = TRUE, remove_numbers = TRUE, tolower = TRUE, ngrams = 1:2, context = "window") 
 
-blog_corp[2]
-
-
+feat <- names(topfeatures(dfm_phe, 300))
+  
+dfm_select(dfm_phe, feat) %>% textplot_network(min_freq = 0.9, omit_isolated = TRUE, vertex_labelfont = "Arial Narrow") +
+  labs(title = "Network map of most frequent terms used in remit letters and PHE business plan", 
+       subtitle = "2 and 3 word ngrams")
 
 ```
-
 
 
 ## PHE publications
 
-PHE is planning to create a products and services catalogue. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
+Its hard to get everything PHE has published on .GVO>UK. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
 
 ```{r}
 
-phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:90)
+phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:94)
+
+phe_cat
 
 ```
 
