@@ -262,7 +262,7 @@ dfm_select(dfm_phe, feat) %>% textplot_network(min_freq = 0.9, omit_isolated = T
 
 ## PHE publications
 
-Its hard to get everything PHE has published on .GVO>UK. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
+Its hard to get everything PHE has published on .GOV.UK. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
 
 ```{r}
 
