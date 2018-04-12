@@ -17,7 +17,7 @@ pubs <- map(pubs, 2)
 pubs <-map(pubs, as.data.frame)
 
 uplink <- map(Rcrawler::LinkExtractor(first_page)[2], as.data.frame)
-phe_pubs  <- as.data.frame(rbind_list(pubs, uplink) )
+phe_pubs  <- as.data.frame(bind_rows(pubs, uplink) )
 
 
 
