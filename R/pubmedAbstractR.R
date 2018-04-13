@@ -22,7 +22,7 @@ comment <- glue::glue("Please wait...Your query is ", {s1@querytranslation}, ". 
                       "By default 1000 abstracts are downloaded. You downloaded ", n, " abstracts. To retrieve more set 'n =' argument to the desired value")
 
 print(comment)
-  
+s1@count  
 fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 
 
