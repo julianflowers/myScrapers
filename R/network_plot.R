@@ -1,6 +1,6 @@
 ## Draws a network plot of documents
 
-create_network_plot <- function(ds, title = "Network plot of documents", subtitle = "", layout = "fr"){
+create_network_plot <- function(ds, title = "Network plot of documents", subtitle = "", layout = "fr", alpha = 0.2, colour = "blue"){
   
   require(tidyverse, quietly = TRUE)
   require(igraph)
@@ -11,7 +11,7 @@ create_network_plot <- function(ds, title = "Network plot of documents", subtitl
 
 
 ggraph(g, layout = layout) +
-  geom_edge_link(aes(edge_alpha = 0.4, edge_colour = "blue")) +
+  geom_edge_link(aes(edge_alpha = alpha, edge_colour = colour)) +
   geom_node_point(color = "goldenrod") +
   geom_node_text(aes(label = name), size = rel(2.5), alpha = 0.4, colour = "blue", vjust = 1, hjust = 1)+
   theme_void() +
