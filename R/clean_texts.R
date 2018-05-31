@@ -1,0 +1,8 @@
+clean_texts <- function(text){
+  
+  text <- tolower(text)
+  text <- tm::removeWords(text, stopwords("en"))
+  text <- tm::removeNumbers(text)
+  text <- tm::removePunctuation(text)
+  
+}
