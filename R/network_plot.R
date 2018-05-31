@@ -13,7 +13,7 @@ create_network_plot <- function(ds, title = "Network plot of documents", subtitl
 ggraph(g, layout = layout) +
   geom_edge_link(aes(edge_alpha = alpha, edge_colour = colour)) +
   geom_node_point(color = "goldenrod") +
-  geom_node_text(aes(label = name), size = rel(2.5), alpha = 0.4, colour = "blue", vjust = 1, hjust = 1)+
+  geom_node_text(aes(label = name), size = rel(2.5), alpha = 0.8, colour = "black", vjust = 1, hjust = 1)+
   theme_void() +
   theme(legend.position = "bottom") +
   labs(title = title, 
