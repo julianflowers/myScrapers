@@ -17,7 +17,7 @@ This notebook identifies and extracts the spreadsheet data published by NHS Digi
 It makes use of 4 functions:
 
 * `get_nhsd_url` which finds urls
-* `create_nhsd_url` which create urls 
+* `create_nhsd_url` which creates urls 
 * `get_nhsd_csv` which finds spreadsheet links
 * `get_nhsd_titles` which finds resource titles
 
@@ -25,17 +25,13 @@ It makes use of 4 functions:
 
 ```{r, include = FALSE}
 
-knitr::opts_chunk$set(cache = TRUE, warning = FALSE)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 
 if(!require("myScrapers"))devtools::install_github("julianflowers/myScrapers")
 library(pacman)
 p_load(myScrapers, tidyverse)
 
 ```
-
-Identifying relevant links on the new NHSD website is an iterative process.
-
-Define functions to extract URLs, create links and find .csv files
 
 
 ## Identify root pages for statistical publications

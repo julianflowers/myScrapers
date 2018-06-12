@@ -19,8 +19,6 @@ knitr::opts_chunk$set(
   fig.height = 6
 )
 
-library(tidyverse, quietly = TRUE)
-library(rvest)
 
 
 ```
@@ -55,7 +53,7 @@ library(devtools)
 library(pacman)
 if(!require("myScrapers"))install_github("julianflowers/myScrapers", build_vignettes =TRUE)
 
-p_load(myScrapers, tidyverse, tidytext, quanteda)
+p_load(myScrapers, tidyverse, tidytext, quanteda, Rcrawler)
 
 ```
 
@@ -113,7 +111,7 @@ blogs2 %>%
   create_bigrams(text) %>%
   group_by(bigram) %>%
   count(sort=TRUE) %>%
-  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity")) %>%
+  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity", "kevin fenton", "friday messages", "wishes friday")) %>%
   with(., wordcloud::wordcloud(bigram, n, colors = palette, random.order = FALSE, random.color = FALSE, max.words = "Inf", rot.per = 0.4, scale = c(4, 0.1)))
  
 ```
@@ -129,15 +127,15 @@ ifelse( n>1, urls <- c(url, url1), urls <- url)
 links <- map(urls, function(x) get_blog_links(x))
 links1 <-  flatten(links) %>% unique() %>% map_chr(1)
 links1 <- links1[-11]
-blogs <- map(links1, function(x) get_blog_text(x))
- blogs1 <- map(blogs, data.frame)
- blogs2 <- map_df(blogs1, bind_rows)
-colnames(blogs2) <- c("text", "url")
+blogs_ds <- map(links1, function(x) get_blog_text(x))
+ blogs_ds1 <- map(blogs, data.frame)
+ blogs_ds2 <- map_df(blogs1, bind_rows)
+colnames(blogs_ds2) <- c("text", "url")
  
 
 palette <- RColorBrewer::brewer.pal(11, "Spectral")
 
-blogs2 %>%
+blogs_ds2 %>%
   create_bigrams(text) %>%
   group_by(bigram) %>%
   count(sort=TRUE) %>%
@@ -149,11 +147,11 @@ blogs2 %>%
 ```
 
 
-```{r network-plot}
+```{r network-plot, fig.height=6, fig.width=8}
 library(igraph)
 library(ggraph)
 
-bigrams <- create_bigrams(blogs2, text)
+bigrams <- create_bigrams(blogs_ds2, text)
 
 bigrams <- bigrams %>%
   separate(url, remove = FALSE, c("root", "name", "cat", "message",  "day", "month", "year" ), sep = "-") %>%
@@ -162,27 +160,20 @@ bigrams <- bigrams %>%
   select(date, bigram, n)
 
 big_count <- bigrams %>%
+  mutate(date )
   group_by(date, bigram) %>%
   count(sort = TRUE) %>%
   #separate(bigram, c("word1", "word2")) %>%
   filter(n >1)
 
-big_graph <- big_count %>%
-  graph_from_data_frame()
-
-
-ggraph(big_graph, layout = "fr") +
-  geom_edge_link(aes(edge_alpha = n)) +
-  geom_node_point(color = "green") +
-  geom_node_text(aes(label = name), size = rel(3), alpha = 0.7, colour = "black", vjust = 1, hjust = 1)+
-  theme_void() +
+create_network_plot(big_count, layout = "graphopt") + 
   theme(legend.position = "bottom") +
   labs(title = "Network plot of Friday messages ")
 ```
 
 
 
-```{r netowrk-quanteda}
+```{r netowrk-quanteda, eval=FALSE}
 library(quanteda)
 library(tm)
 
@@ -204,7 +195,7 @@ Its hard to get everything PHE has published on .GOV.UK. To assist this process 
 
 ```{r}
 
-phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:94)
+phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:95)
 
 phe_cat
 
