@@ -33,6 +33,7 @@ This vignette introduces an internal PHE R package `myScrapers` which includes t
 
 The functions offered include 
 
+* `get_dsph_england` which downloads the latest list of Directors of Public Health from .GOV.UK
 * `blog_type_extractor` which pulls a dataframe of blog topics or authors
 * `phe_blog_scraper` which allows the user to retrieve the text of blogs by topic into a tidy data frame.
 * `phe_pubs` which downloads an interactive table of PHE publications on .GOV.UK
@@ -56,6 +57,22 @@ if(!require("myScrapers"))install_github("julianflowers/myScrapers", build_vigne
 p_load(myScrapers, tidyverse, tidytext, quanteda, Rcrawler)
 
 ```
+
+# Get a list of Directors of Public Health
+
+This is easily achieved with the `get_dsph_england()` function.
+
+```{r}
+
+
+dsph <- get_dsph_england()
+
+head(dsph)
+
+
+
+```
+
 
 
 # PHE Blogs
