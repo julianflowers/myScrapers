@@ -25,7 +25,7 @@ comment <- glue::glue("Please wait...Your query is ", {s1@querytranslation}, ". 
 
 print(comment)
 
-
+fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
 DOI = fetch@PMID

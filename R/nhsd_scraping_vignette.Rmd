@@ -4,14 +4,14 @@ author: "Julian Flowers"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{phe blog extraction}
+  %\VignetteIndexEntry{nhsd data extraction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Introduction
 
-This notebook identifies and extracts the spreadsheet data published by NHS Digital for a range of topics. It makes use of functions in the `myScrapers` package which allow us to iteratively parse the NHS Digital website to identify the spreadsheets and csv files attached to statistical publications - "https://digital.nhs.uk/data-and-information/publications/statistical"
+This script identifies and extracts the spreadsheet data published by NHS Digital for a range of topics. It makes use of functions in the `myScrapers` package which allow us to iteratively parse the NHS Digital website to identify the spreadsheets and csv files attached to statistical publications - https://digital.nhs.uk/data-and-information/publications/statistical
 
 
 It makes use of 4 functions:
@@ -59,11 +59,10 @@ links
 ## Find individual pages
 
 ```{r}
-## for 1 set - eg trends in consultation rates
-
+## for 1 set - eg statistics on smoking and drinking in young people
 links1 <- map(links, function(x) get_nhsd_urls(x) )
 
-links1[[1]][1:6]
+links1[[5]][1:12]
 ```
 
 We now have a list of all the subpages for each topic.
@@ -95,7 +94,7 @@ We can in read in csv files directly from the link (xlsx files need to be downlo
 csvs <- csv_flat %>% .[grepl("csv", .)] 
 
 
-downloads <- map(csvs[c(29)], read_csv, na = "*")
+downloads <- map(csvs[100:102], read_csv, na = "*")
 
 head(downloads)
 ```
