@@ -1,9 +1,11 @@
 ## function for downloading abstracts from pubmed
 
-pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pubmed"){
+pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pubmed", keyword = FALSE, authors = FALSE){
   
   require(RISmed)
-  require(tidyverse)
+  require(dplyr)
+  require(purrr)
+  require(tibble)
   
   search <- search
   n <- n
@@ -23,9 +25,6 @@ comment <- glue::glue("Please wait...Your query is ", {s1@querytranslation}, ". 
 
 print(comment)
 
-fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
-
-
 
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
@@ -35,7 +34,9 @@ abstracts <- as.tibble(cbind(title = fetch@ArticleTitle,
                            journal = fetch@Title,
                            DOI,
                            year = fetch@YearPubmed))
+## add MeSH headings
 
+if(keyword == TRUE){
 mesh <- map(fetch@Mesh,  "Heading") %>%
   map(., data.frame) 
 
@@ -47,9 +48,29 @@ mesh <- mesh %>%
   data.frame()
 
 abstracts <- left_join(abstracts, mesh)
+}
+## add authors
+if(authors == TRUE){
+library(magrittr)
+authors <- purrr::map(fetch@Author, extract,  c("LastName", "Initials", "order")) %>%
+  purrr::map(., data.frame)
 
+
+DOI = fetch@PMID
+DOI -> names(authors)
+
+authors <- authors %>%
+  bind_rows(., .id = "DOI") %>%
+  data.frame()
+
+## abstracts
+
+
+abstracts <- left_join(abstracts, authors)
+}
 ## returns latest 1000 abstracts unless n value changed   
-abstracts           
+abstracts        
 }
 
+chatbot <- pubmedAbstractR("chatbot", n = 8, end = 2018, keyword = FALSE, authors = TRUE)
 

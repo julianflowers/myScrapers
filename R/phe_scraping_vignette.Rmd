@@ -97,31 +97,31 @@ cats
 
 url <- "https://publichealthmatters.blog.gov.uk"
 
-authors <- get_blog_authors(url)
+authors <- get_blog_authors(urls)
  
-authors
+head(authors, 10)
 ```
 
 
 ## Blog text
 
-We can extract blog posts for any given category e.g. *the-week-at-phe*
+We can extract blog posts for any given category e.g. *priority2*
 
 ```{r get-blog-text}
-n <- 6
-url <- "https://publichealthmatters.blog.gov.uk/category/the-week-at-phe/"
+n <- 3
+url <- "https://publichealthmatters.blog.gov.uk/category/data-blog/"
 url1 <- paste0(url, "/page/", 2:n)
 ifelse( n>1, urls <- c(url, url1), urls <- url)
 #cat <- "local-authority-public-health/"
 links <- map(urls, function(x) get_blog_links(x))
 links1 <-  flatten(links) %>% unique() %>% map_chr(1)
-links1 <- links1[-11]
+links1 <- links1[-8]
 blogs <- map(links1, function(x) get_blog_text(x))
  blogs1 <- map(blogs, data.frame)
  blogs2 <- map_df(blogs1, bind_rows)
 colnames(blogs2) <- c("text", "url")
  
-
+## Visualise
 palette <- RColorBrewer::brewer.pal(10, rev("Spectral"))
 
 blogs2 %>%
@@ -133,10 +133,34 @@ blogs2 %>%
  
 ```
 
+## timeline for *reducing the burden of disease* blogs
+
+```{r timeline}
+str(blogs2)
+
+blogs3 <- blogs2 %>%
+  mutate(url = str_replace_all(url, "https://publichealthmatters.blog.gov.uk/", "")) %>%
+  separate(url, c("year", "month", "day", "title"), sep = "/") %>%
+  mutate(date = lubridate::ymd(paste(year, month, day, sep = "-"))) %>%
+  select(c(1, 5:6))
+         
+colnames(blogs3) <- c("text", "title", "date")         
+
+head(blogs3, 1)
+
+blogs3 %>%
+  ggplot(aes(date, reorder(title, date))) +
+  geom_point() +
+  theme_minimal()
+
+
+```
+
+
 or Duncan's friday message
 
 ```{r friday-message}
-n <- 6
+n <- 7
 url <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
 url1 <- paste0(url, "/page/", 2:n)
 ifelse( n>1, urls <- c(url, url1), urls <- url)
@@ -145,8 +169,8 @@ links <- map(urls, function(x) get_blog_links(x))
 links1 <-  flatten(links) %>% unique() %>% map_chr(1)
 links1 <- links1[-11]
 blogs_ds <- map(links1, function(x) get_blog_text(x))
- blogs_ds1 <- map(blogs, data.frame)
- blogs_ds2 <- map_df(blogs1, bind_rows)
+blogs_ds1 <- map(blogs_ds, data.frame)
+blogs_ds2 <- map_df(blogs_ds1, bind_rows)
 colnames(blogs_ds2) <- c("text", "url")
  
 
@@ -177,31 +201,35 @@ bigrams <- bigrams %>%
   select(date, bigram, n)
 
 big_count <- bigrams %>%
-  mutate(date )
-  group_by(date, bigram) %>%
+  mutate(date = str_replace_all(date, "/-NA", "-2017"), 
+    date1 = lubridate::dmy(date)) %>%
+  group_by(date, date1, bigram) %>%
   count(sort = TRUE) %>%
-  #separate(bigram, c("word1", "word2")) %>%
+    ungroup %>%
+  mutate(date2 = as.character(date1)) %>%
+  filter(date1 > "2017-12-31") %>%
+  select(date2, bigram, n) %>%
   filter(n >1)
 
-create_network_plot(big_count, layout = "graphopt") + 
+create_network_plot(big_count, layout = "fr") + 
   theme(legend.position = "bottom") +
-  labs(title = "Network plot of Friday messages ")
+  labs(title = "Network plot of Friday messages in 2018 ")
 ```
 
 
 
-```{r netowrk-quanteda, eval=FALSE}
+```{r network-quanteda, eval=FALSE}
 library(quanteda)
 library(tm)
 
-blog_corp <- quanteda::corpus(blogs2$text)
+blog_corp <- quanteda::corpus(blogs_ds2$text)
 dfm_phe <- quanteda::dfm(blog_corp, remove = c(stopwords("en"), "government", "phe", "health", "uploads", "harlow", "nhs", "england", "the_nhs", "phe_harlow", "attachment_data", "victoria", "london", "swh", "eu"), remove_punct = TRUE, remove_numbers = TRUE, tolower = TRUE, ngrams = 1:2, context = "window") 
 
 feat <- names(topfeatures(dfm_phe, 300))
   
 dfm_select(dfm_phe, feat) %>% textplot_network(min_freq = 0.9, omit_isolated = TRUE, vertex_labelfont = "Arial Narrow") +
-  labs(title = "Network map of most frequent terms used in remit letters and PHE business plan", 
-       subtitle = "2 and 3 word ngrams")
+  labs(title = "Network map of most frequent terms used in Friday messages", 
+       subtitle = "1 and 2 word ngrams")
 
 ```
 
@@ -212,7 +240,7 @@ Its hard to get everything PHE has published on .GOV.UK. To assist this process 
 
 ```{r}
 
-phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:95)
+phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:100)
 
 phe_cat
 
