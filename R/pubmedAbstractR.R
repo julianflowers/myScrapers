@@ -72,5 +72,5 @@ abstracts <- left_join(abstracts, authors)
 abstracts        
 }
 
-chatbot <- pubmedAbstractR("chatbot", n = 8, end = 2018, keyword = FALSE, authors = TRUE)
+
 
