@@ -1,7 +1,7 @@
 # get page docs
 
 
-get_page_links <- function(url){
+get_page_docs <- function(url){
   
   require(httr)
   require(tidyverse)
