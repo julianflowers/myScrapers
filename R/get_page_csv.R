@@ -1,7 +1,7 @@
 # get page csv/xls
 
 
-get_page_links <- function(url){
+get_page_csvs <- function(url){
   
   require(httr)
   require(tidyverse)
