@@ -30,5 +30,4 @@ googlesearchR <- function(search, n = 100 ){
   
 }
 
-googlesearchR("director of public health annual report", n = 400)
 
