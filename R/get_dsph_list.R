@@ -20,7 +20,8 @@ get_dsph_england <- function(url){
     mutate(data = str_replace(data, "Tameside", "Tameside -")) %>%
     mutate(data = str_replace(data, "–  Wendy", "- Wendy")) %>%
     mutate(data = str_replace(data, " -Imran", " - Imran")) %>%
-    mutate(data = str_replace(data, "Meredith \\(actin", "Meredith \\(acting")) %>%
+    mutate(date = str_replace(data, "Sussex -", "Sussex ")) %>%
+    #mutate(data = str_replace(data, "Meredith \\(actin", "Meredith \\(acting")) %>%
     separate(data, c("LA", "Name"), sep = " - ")
   
 }
