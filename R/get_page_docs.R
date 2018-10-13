@@ -11,7 +11,7 @@ get_page_docs <- function(url){
     read_html() %>%
     html_nodes("a") %>%
     html_attr("href") %>%
-    .[grepl("pdf$|doc.$")]
+    .[grepl("pdf$|doc.$", .)]
   
   return(docs)
   
