@@ -1,0 +1,160 @@
+---
+title: "Web scraping"
+author: "Julian Flowers"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE, 
+  message = FALSE, 
+  cache = TRUE, 
+  echo = TRUE, 
+  comment = "#>"
+)
+
+library(tidyverse)
+library(myScrapers)
+
+```
+
+This vignette illustrates some of the basics of web-scraping and some features of the `myScrapers` package - in particular simple web-scraping functions. We also show some functions in the package specifically designed to retrieve public health information for public health practitioners.
+
+## Webscraping basics in R
+
+The basic toolkit is:
+
+* a Url (link) you want to obtain data from
+* the `rvest` package in R or `beautiful soup` in Python
+* the [selector gadget](https://selectorgadget.com/) extension for web browsers
+
+## Installing the package
+
+The package is only available on Github and can be downloaded using `devtools`.
+
+```{r, eval=FALSE}
+
+library(devtools)
+devtools::install_github("julianflowers/myScrapers")
+
+```
+
+## Simple web-scraping
+
+Web scraping is a set of techniques to obtain information or data from websites. In R the `rvest` and `httr` packages are the mainstay of scraping. These import and read html and xml pages into R which can then be parsed and analysed.
+
+In `myScrapers` there are 2 functions:
+
+* `get_page_links` which identifies the links on a webpage
+* `get_page_text` which extracts text from a webpage
+
+## Examples
+
+We can use `get_page_links`  to extract information from following page of PHE statistical releases. https://www.gov.uk/government/statistics?departments%5B%5D=public-health-england
+
+```{r}
+
+
+
+url <- "https://www.gov.uk/government/statistics?departments%5B%5D=public-health-england"
+
+get_page_links(url) %>%
+  .[19:40]
+
+```
+
+## Use cases
+
+We'll use [GP in hours syndromic surveillance](https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins-for-2018) data to illustrate further uses. This report "Monitors the number of people who visit their GP during surgery hours under the syndromic surveillance system."
+
+The system publishes weekly reports and spreadsheets  - to obtain a year's worth of these reports manually would require 104 separate downloads.
+
+Using a webscraping approach this can be achieved in a few lines of code.
+
+### Identifying reports
+
+The code below identifies all the pdf reports on the page.
+
+```{r}
+urls <- "https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins-for-2018"
+
+get_page_links(urls) %>%
+  .[grepl("pdf$", .)] %>%
+  head(10) %>%
+  unique()
+
+```
+
+We can then use the `downloader` package to download the pdfs:
+
+```{r}
+
+library(downloader)
+
+get_page_links(urls) %>%
+  .[grepl("pdf$", .)] %>%
+  head(10) %>%
+  unique() %>%
+  map(., ~download(.x, destfile = basename(.x)))
+  
+
+
+
+```
+
+
+## Identifiying data (spreadsheet links)
+
+We can take a similar approach to spreadsheet.
+
+```{r, echo = FALSE}
+urls <- "https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins-for-2018"
+
+get_page_links(urls) %>%
+  .[grepl("xls.?$", .)] %>%
+  head(10) %>%
+  unique() %>%
+  map(., ~download(.x, destfile = basename(.x)))
+  
+
+```
+
+Having downloaded the reports or spreadsheets it is now straightforward to import them for further analysis.
+
+```{r}
+
+library(readxl)
+files <- list.files(pattern = ".xls")
+
+data <- map(files, ~(read_excel(.x,  sheet = "Local Authority", na = "*", 
+    skip = 4)))
+
+head(data)
+
+
+
+```
+
+## Additional functions
+
+I have added a few functions to the package.
+
+`get_dsph_england` returns a list of local authorities and their current DsPH. It scrapes https://www.gov.uk/government/publications/directors-of-public-health-in-england--2/directors-of-public-health-in-england
+
+```{r}
+
+dsph <- get_dsph_england()
+dsph %>%
+  knitr::kable()
+
+```
+
+
+
+

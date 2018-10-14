@@ -1,0 +1,248 @@
+---
+title: "Extracting information from PHE blogs and publications"
+author: "Julian Flowers"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{phe blog extraction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  cache = TRUE,
+  warning = FALSE, 
+  fig.width = 8,
+  fig.height = 6
+)
+
+
+
+```
+
+PHE publishes a range of information to <https://www.gov.uk/phe> inlcuding blogs, statistics and other publications.
+
+This vignette introduces an internal PHE R package `myScrapers` which includes tools to extract published public health information from:
+
+* NHS Digital
+* NICE Public Health Guidance
+* .GOV.UK
+
+The functions offered include 
+
+* `get_dsph_england` which downloads the latest list of Directors of Public Health from .GOV.UK
+* `blog_type_extractor` which pulls a dataframe of blog topics or authors
+* `phe_blog_scraper` which allows the user to retrieve the text of blogs by topic into a tidy data frame.
+* `phe_pubs` which downloads an interactive table of PHE publications on .GOV.UK
+* `get_nhsd_pubs`, `get_NHSD_header`, `get_NHSD_sheets`,`get_NHSD_metadata`,`get_NHSD_header` which can be combined to identify published public health spreadsheets on the NHS Digital website
+* `get_nice_guidance` which downloads as a single file, recommendations from NICE public health guidance.
+
+These tools are intended to help text mining and analysis of published content, to assist developing outputs such as products and services catalogues, and to make it easier to identify public health content at NHS Digital.
+
+The functions are assembled as an R package which is currently available on github at https://github.com/julianflowers/myScrapers.
+
+
+## Getting started
+
+The first step is to install the package. This can be achieved with the code below:
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(devtools)
+library(pacman)
+if(!require("myScrapers"))install_github("julianflowers/myScrapers", build_vignettes =TRUE)
+
+p_load(myScrapers, tidyverse, tidytext, quanteda, Rcrawler)
+
+```
+
+# Get a list of Directors of Public Health
+
+This is easily achieved with the `get_dsph_england()` function.
+
+```{r}
+
+
+dsph <- get_dsph_england()
+
+head(dsph)
+
+
+
+```
+
+
+
+# PHE Blogs
+
+The URL for PHE blogs is "https://publichealthmatters.blog.gov.uk".
+
+We can obtain a table of blog topic categories or authors...
+
+```{r phe-blog-urls, warning=FALSE}
+
+url <- "https://publichealthmatters.blog.gov.uk"
+url1 <- paste0(url,  "/page/", 2:73)
+urls <- c(url, url1)
+
+cats <- get_blog_categories(urls)
+ 
+cats
+```
+
+
+```{r get-authors, warning=FALSE}
+
+url <- "https://publichealthmatters.blog.gov.uk"
+
+authors <- get_blog_authors(urls)
+ 
+head(authors, 10)
+```
+
+
+## Blog text
+
+We can extract blog posts for any given category e.g. *priority2*
+
+```{r get-blog-text}
+n <- 3
+url <- "https://publichealthmatters.blog.gov.uk/category/data-blog/"
+url1 <- paste0(url, "/page/", 2:n)
+ifelse( n>1, urls <- c(url, url1), urls <- url)
+#cat <- "local-authority-public-health/"
+links <- map(urls, function(x) get_blog_links(x))
+links1 <-  flatten(links) %>% unique() %>% map_chr(1)
+links1 <- links1[-8]
+blogs <- map(links1, function(x) get_blog_text(x))
+ blogs1 <- map(blogs, data.frame)
+ blogs2 <- map_df(blogs1, bind_rows)
+colnames(blogs2) <- c("text", "url")
+ 
+## Visualise
+palette <- RColorBrewer::brewer.pal(10, rev("Spectral"))
+
+blogs2 %>%
+  create_bigrams(text) %>%
+  group_by(bigram) %>%
+  count(sort=TRUE) %>%
+  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity", "kevin fenton", "friday messages", "wishes friday")) %>%
+  with(., wordcloud::wordcloud(bigram, n, colors = palette, random.order = FALSE, random.color = FALSE, max.words = "Inf", rot.per = 0.4, scale = c(4, 0.1)))
+ 
+```
+
+## timeline for *reducing the burden of disease* blogs
+
+```{r timeline}
+str(blogs2)
+
+blogs3 <- blogs2 %>%
+  mutate(url = str_replace_all(url, "https://publichealthmatters.blog.gov.uk/", "")) %>%
+  separate(url, c("year", "month", "day", "title"), sep = "/") %>%
+  mutate(date = lubridate::ymd(paste(year, month, day, sep = "-"))) %>%
+  select(c(1, 5:6))
+         
+colnames(blogs3) <- c("text", "title", "date")         
+
+head(blogs3, 1)
+
+blogs3 %>%
+  ggplot(aes(date, reorder(title, date))) +
+  geom_point() +
+  theme_minimal()
+
+
+```
+
+
+or Duncan's friday message
+
+```{r friday-message}
+n <- 7
+url <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
+url1 <- paste0(url, "/page/", 2:n)
+ifelse( n>1, urls <- c(url, url1), urls <- url)
+#cat <- "local-authority-public-health/"
+links <- map(urls, function(x) get_blog_links(x))
+links1 <-  flatten(links) %>% unique() %>% map_chr(1)
+links1 <- links1[-11]
+blogs_ds <- map(links1, function(x) get_blog_text(x))
+blogs_ds1 <- map(blogs_ds, data.frame)
+blogs_ds2 <- map_df(blogs_ds1, bind_rows)
+colnames(blogs_ds2) <- c("text", "url")
+ 
+
+palette <- RColorBrewer::brewer.pal(11, "Spectral")
+
+blogs_ds2 %>%
+  create_bigrams(text) %>%
+  group_by(bigram) %>%
+  count(sort=TRUE) %>%
+  ungroup() %>%
+  mutate(bigram = tm::removeNumbers(bigram)) %>%
+  filter(!bigram %in% c("public health", "we’re pleased", "past week", "phe’s online", "week here’s", "online activity", "friday messages", "wishes friday")) %>%
+  with(., wordcloud::wordcloud(bigram, n, colors = palette, random.order = FALSE, random.color = FALSE, max.words = "Inf", rot.per = 0.4, scale = c(4, 0.1)))
+ 
+```
+
+
+```{r network-plot, fig.height=6, fig.width=8}
+library(igraph)
+library(ggraph)
+
+bigrams <- create_bigrams(blogs_ds2, text)
+
+bigrams <- bigrams %>%
+  separate(url, remove = FALSE, c("root", "name", "cat", "message",  "day", "month", "year" ), sep = "-") %>%
+  mutate(year = str_replace_all(year, "/", "")) %>%
+  unite(date, day, month, year, sep ="-") %>%
+  select(date, bigram, n)
+
+big_count <- bigrams %>%
+  mutate(date = str_replace_all(date, "/-NA", "-2017"), 
+    date1 = lubridate::dmy(date)) %>%
+  group_by(date, date1, bigram) %>%
+  count(sort = TRUE) %>%
+    ungroup %>%
+  mutate(date2 = as.character(date1)) %>%
+  filter(date1 > "2017-12-31") %>%
+  select(date2, bigram, n) %>%
+  filter(n >1)
+
+create_network_plot(big_count, layout = "fr") + 
+  theme(legend.position = "bottom") +
+  labs(title = "Network plot of Friday messages in 2018 ")
+```
+
+
+
+```{r network-quanteda, eval=FALSE}
+library(quanteda)
+library(tm)
+
+blog_corp <- quanteda::corpus(blogs_ds2$text)
+dfm_phe <- quanteda::dfm(blog_corp, remove = c(stopwords("en"), "government", "phe", "health", "uploads", "harlow", "nhs", "england", "the_nhs", "phe_harlow", "attachment_data", "victoria", "london", "swh", "eu"), remove_punct = TRUE, remove_numbers = TRUE, tolower = TRUE, ngrams = 1:2, context = "window") 
+
+feat <- names(topfeatures(dfm_phe, 300))
+  
+dfm_select(dfm_phe, feat) %>% textplot_network(min_freq = 0.9, omit_isolated = TRUE, vertex_labelfont = "Arial Narrow") +
+  labs(title = "Network map of most frequent terms used in Friday messages", 
+       subtitle = "1 and 2 word ngrams")
+
+```
+
+
+## PHE publications
+
+Its hard to get everything PHE has published on .GOV.UK. To assist this process we have written a function which produces an interactive table of all the PHE publications by category (NB at the moment it is over inclusive). This makes use of the `DT` package and allows us to add download options so the data can be downloaded in various forms.
+
+```{r}
+
+phe_cat <- myScrapers::get_phe_catalogue(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:100)
+
+phe_cat
+
+```
+

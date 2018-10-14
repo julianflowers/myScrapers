@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Julian Flowers" />
+
+<meta name="date" content="2018-07-28" />
+
+<title>Identifying and extracting spreadsheet data from NHS Digital</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Identifying and extracting spreadsheet data from NHS Digital</h1>
+<h4 class="author"><em>Julian Flowers</em></h4>
+<h4 class="date"><em>2018-07-28</em></h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This script identifies and extracts the spreadsheet data published by NHS Digital for a range of topics. It makes use of functions in the <code>myScrapers</code> package which allow us to iteratively parse the NHS Digital website to identify the spreadsheets and csv files attached to statistical publications - <a href="https://digital.nhs.uk/data-and-information/publications/statistical" class="uri">https://digital.nhs.uk/data-and-information/publications/statistical</a></p>
+<p>It makes use of 4 functions:</p>
+<ul>
+<li><code>get_nhsd_url</code> which finds urls</li>
+<li><code>create_nhsd_url</code> which creates urls</li>
+<li><code>get_nhsd_csv</code> which finds spreadsheet links</li>
+<li><code>get_nhsd_titles</code> which finds resource titles</li>
+</ul>
+<div id="identify-root-pages-for-statistical-publications" class="section level2">
+<h2>Identify root pages for statistical publications</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">url &lt;-<span class="st"> &quot;https://digital.nhs.uk/search/document-type/publication/publicationStatus/true?page=&quot;</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2">urls &lt;-<span class="st"> </span><span class="kw">paste0</span>(url, <span class="dv">1</span><span class="op">:</span><span class="dv">50</span>) ## 1st pages of results</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">urls1 &lt;-<span class="st"> </span><span class="kw">map</span>(urls, <span class="cf">function</span>(x) <span class="kw">get_nhsd_urls</span>(x))</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4">urls1 &lt;-<span class="st"> </span><span class="kw">flatten</span>(urls1)</a></code></pre></div>
+</div>
+<div id="create-links" class="section level2">
+<h2>Create links</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">links &lt;-<span class="st"> </span><span class="kw">create_nhsd_urls</span>(urls1)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">links</a></code></pre></div>
+<pre><code>##   [1] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-ophthalmic-services-activity-statistics/year-ending-31-march-2018/gosactivity1718&quot;                                                                                                                                                           
+##   [2] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-data-opt-out/july-2018/ndop-jul18&quot;                                                                                                                                                                                                          
+##   [3] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics---april-2018&quot;                                                                                                                                                                                      
+##   [4] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-vacancies-survey/nhs-vacancy-statistics-england---february-2015---march-2018-provisional-experimental-statistics&quot;                                                                                                                                
+##   [5] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates---january-2018-to-march-2018-and-annual-summary-2010-11-to-2017-18&quot;                                                                                                                            
+##   [6] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/april-2018&quot;                                                                                                                                                                                                    
+##   [7] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/fit-notes-issued-by-gp-practices/fit-notes-issued-by-gp-practices-england---march-2018&quot;                                                                                                                                                              
+##   [8] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mi-acute-patient-level-activity-and-costing/data-quality-and-initial-analysis-2016-17&quot;                                                                                                                                                               
+##   [9] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics---provisional-statistics-at-june-2018-mhsds-april-2018-final&quot;                                                                                                
+##  [10] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/july-2018&quot;                                                                                                                                                                                                      
+##  [11] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/june-2018&quot;                                                                                                                                                                                                               
+##  [12] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data---april-2018---may-2018&quot;       
+##  [13] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-for-england---may-2018-by-provider&quot;                                                                                                                  
+##  [14] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/march-2018&quot;                                                                                                                                                                       
+##  [15] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/april-2018-by-provider&quot;                                                                                                                                                                                    
+##  [16] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-april-provisional-may-2018&quot;                                                                                                                                
+##  [17] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/april-2018&quot;                                                                                                                                                                                         
+##  [18] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard-to-december-2017&quot;                                                                                        
+##  [19] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-april-2018-final-including-reports-on-the-iapt-pilots&quot;                                                                
+##  [20] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/april-2018&quot;                                                                                                                                                                                                          
+##  [21] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-fgm---annual-report-2017-18&quot;                                                                                                                                                                     
+##  [22] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-women-s-smoking-status-at-time-of-delivery-england/statistics-on-womens-smoking-status-at-time-of-delivery-england---quarter-4-october-2017-to-december-2017&quot;                                                                          
+##  [23] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-smoking/statistics-on-smoking-england-2018&quot;                                                                                                                                                                                            
+##  [24] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/prescriptions-dispensed-in-the-community/prescriptions-dispensed-in-the-community-england---2007---2017&quot;                                                                                                                                             
+##  [25] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/march-2018&quot;                                                                                                                                                                                                    
+##  [26] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-provisional-statistics-at-may-2018-mhsds-march-2018-final&quot;                                                                                                   
+##  [27] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics---march-2018-provisional-statistics&quot;                                                                                                                                                               
+##  [28] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-february-2018-provisional-statistics&quot;                                                                                                                                                          
+##  [29] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-staff-earnings-estimates/nhs-staff-earnings-estimates-march-2018-provisional-statistics&quot;                                                                                                                                                         
+##  [30] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-dental-statistics/nhs-dental-statistics-for-england---quarter-3-2017-18&quot;                                                                                                                                                                         
+##  [31] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-march-2018-final-including-reports-on-the-iapt-pilots-and-quarter-4-2017-18-data&quot;                                     
+##  [32] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-surplus-land/2017-18-england&quot;                                                                                                                                                                                                                    
+##  [33] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-march-2018&quot;                                                                                                                                                
+##  [34] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/insulin-pump-report-2016-17&quot;                                                                                                                                                                                                 
+##  [35] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/february-2018&quot;                                                                                                                                                                    
+##  [36] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-march-2018&quot;                                                                                                                                        
+##  [37] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data-april-2017---march-2018-m13&quot;   
+##  [38] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/june-2018&quot;                                                                                                                                                                                                      
+##  [39] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/may-2018&quot;                                                                                                                                                                                                                
+##  [40] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/2017-18&quot;                                                                                                                                                                                                                 
+##  [41] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-january-march-2018-experimental-statistics&quot;                                                                                                                                                      
+##  [42] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/data-on-written-complaints-in-the-nhs/data-on-written-complaints-in-the-nhs-2017-18-quarter-4-experimental&quot;                                                                                                                                          
+##  [43] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/ccg-prescribing-data/january-to-march-2018&quot;                                                                                                                                                                                                          
+##  [44] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/march-2018&quot;                                                                                                                                                                                                          
+##  [45] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/february-2018&quot;                                                                                                                                                                                                 
+##  [46] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics---february-2018&quot;                                                                                                                                                                                   
+##  [47] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates---january-2018-provisional-statistics&quot;                                                                                                                                                         
+##  [48] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/april-2018&quot;                                                                                                                                                                                                              
+##  [49] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics---provisional-statistics-at-april-2018-mhsds-february-2018-final&quot;                                                                                            
+##  [50] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/final-31-december-2017-and-provisional-31-march-2018-experimental-statistics&quot;                                                                                                                                  
+##  [51] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/may-2018&quot;                                                                                                                                                                                                       
+##  [52] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england---february-2018-final-including-reports-on-the-iapt-pilots&quot;                                                           
+##  [53] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data---april-2017---march-2018-m12&quot; 
+##  [54] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-for-england---march-2018-by-provider&quot;                                                                                                                
+##  [55] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services---february-2018&quot;                                                                                                                                   
+##  [56] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-february-provisional-march-2018&quot;                                                                                                                           
+##  [57] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/january-2018&quot;                                                                                                                                                                     
+##  [58] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/february-2018&quot;                                                                                                                                                                                                       
+##  [59] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-alcohol/2018&quot;                                                                                                                                                                                                                          
+##  [60] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/january-2018&quot;                                                                                                                                                                                                  
+##  [61] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics---commissioner-census-assuring-transformation-march-2018-provisional-statistics&quot;                                                                             
+##  [62] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/fit-notes-issued-by-gp-practices/fit-notes-issued-by-gp-practices-england.-december-2017&quot;                                                                                                                                                            
+##  [63] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-jan-2018-final-including-reports-on-the-iapt-pilots&quot;                                                                  
+##  [64] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-nhs-stop-smoking-services-in-england/statistics-on-nhs-stop-smoking-services-in-england-april-2017-to-december-2017&quot;                                                                                                                   
+##  [65] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-december-2017-provisional-statistics&quot;                                                                                                                                                          
+##  [66] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics---january-2018&quot;                                                                                                                                                                                    
+##  [67] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/march-2018&quot;                                                                                                                                                                                                              
+##  [68] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mesh/apr08-mar17/retrospective-review-of-surgery-for-vaginal-prolapse-and-stress-urinary-incontinence-using-tape-or-mesh-copy&quot;                                                                                                                       
+##  [69] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/care-information-choices/mi-june-2018&quot;                                                                                                                                                                                                               
+##  [70] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/finalised-patient-reported-outcome-measures-proms-in-england-for-groin-hernia-and-varicose-vein-procedures-april-2017-to-september-2017&quot;                                                                     
+##  [71] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2017-to-december-2017&quot;                                                                                                        
+##  [72] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2016-to-march-2017&quot;                                                                                                           
+##  [73] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disabilities-health-check-scheme/learning-disabilities-health-check-scheme-england-quarter-4-2017-18&quot;                                                                                                                                       
+##  [74] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/gp-contract-services/gp-contract-services-england-2017-18&quot;                                                                                                                                                                                           
+##  [75] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/patients-registered-at-a-gp-practice-april-2018-special-topic---registered-patients-compared-to-the-projected-resident-population-in-england&quot;                                                                   
+##  [76] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators---england-by-provider-for-february-2018&quot;                                                                                                             
+##  [77] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-january-provisional-february-2018&quot;                                                                                                                         
+##  [78] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data---april-2017-to-february-2018&quot;
+##  [79] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/december-2017&quot;                                                                                                                                                                    
+##  [80] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard-to-september-2017&quot;                                                                                       
+##  [81] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-january-2018&quot;                                                                                                                                                                                     
+##  [82] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-obesity-physical-activity-and-diet/statistics-on-obesity-physical-activity-and-diet-england-2018&quot;                                                                                                                                      
+##  [83] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/november-december-2017&quot;                                                                                                                                                                                        
+##  [84] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-commissioner-census-assuring-transformation-february-2018-provisional-statistics&quot;                                                                            
+##  [85] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-december-2017-final-including-reports-on-the-iapt-pilots-and-quarter-3-2017-18-data&quot;                                  
+##  [86] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/care-information-choices/mi-care-information-choices-england-march-2018&quot;                                                                                                                                                                             
+##  [87] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-staff-earnings-estimates/nhs-staff-earnings-estimates-december-2017-provisional-statistics&quot;                                                                                                                                                      
+##  [88] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-december-2017&quot;                                                                                                                                                                                     
+##  [89] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-november-2017&quot;                                                                                                                                                                                 
+##  [90] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-december-2017-provisional-january-2018&quot;                                                                                                                    
+##  [91] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-january-2018&quot;                                                                                                                                      
+##  [92] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/february-2018&quot;                                                                                                                                                                                                           
+##  [93] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/prescription-cost-analysis/prescription-cost-analysis-england-2017&quot;                                                                                                                                                                                  
+##  [94] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-inpatient-audit/national-diabetes-inpatient-audit-nadia-2017&quot;                                                                                                                                                                      
+##  [95] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-footcare-audit/national-diabetes-foot-care-audit-2014-2017&quot;                                                                                                                                                                        
+##  [96] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/national-diabetes-audit-report-1-findings-and-recommendations-2016-17&quot;                                                                                                                                                       
+##  [97] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-ophthalmic-services-workforce-statistics/general-ophthalmic-workforce-statistics-31-december-2017&quot;                                                                                                                                           
+##  [98] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/november-2017&quot;                                                                                                                                                                    
+##  [99] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-january-2018&quot;   
+## [100] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-january-2018&quot;                                                                                                                
+## [101] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/march-2018&quot;                                                                                                                                                                                                     
+## [102] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-women-s-smoking-status-at-time-of-delivery-england/statistics-on-women-s-smoking-status-at-time-of-delivery-england-quarter-3-2017-18&quot;                                                                                                 
+## [103] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/october-2017&quot;                                                                                                                                                                                                  
+## [104] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/data-on-written-complaints-in-the-nhs/data-on-written-complaints-in-the-nhs-2017-18-quarter-3-experimental&quot;                                                                                                                                          
+## [105] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-fgm-october-2017-to-december-2017-experimental-statistics-report&quot;                                                                                                                                
+## [106] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-december-2017&quot;                                                                                                                                                                                    
+## [107] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/ccg-prescribing-data/october-to-december-2017&quot;                                                                                                                                                                                                       
+## [108] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-november-2017-provisional-statistics&quot;                                                                                                                                                              
+## [109] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-october-2017&quot;                                                                                                                                                                                  
+## [110] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/healthcare-workforce-statistics/healthcare-workforce-statistics-september-2017-experimental&quot;                                                                                                                                                         
+## [111] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-annual-reports-on-the-use-of-iapt-services/annual-report-2016-17-further-analyses&quot;                                                                                                                                           
+## [112] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-commissioner-census-assuring-transformation-january-2018-provisional-statistics&quot;                                                                             
+## [113] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-november-2017-final-including-reports-on-the-iapt-pilots&quot;                                                             
+## [114] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-dental-statistics/nhs-dental-statistics-for-england-2017-18-second-quarterly-report&quot;                                                                                                                                                             
+## [115] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disabilities-health-check-scheme/learning-disabilities-health-check-scheme-england-quarter-3-2017-18&quot;                                                                                                                                       
+## [116] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/january-2018&quot;                                                                                                                                                                                                            
+## [117] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-december-2017&quot;                                                                                                                                     
+## [118] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-november-provisional-december-2017&quot;                                                                                                                        
+## [119] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/as-at-31-december-2017-provisional-experimental-statistics&quot;                                                                                                                                                    
+## [120] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/as-at-30-september-2017-final-experimental-statistics&quot;                                                                                                                                                         
+## [121] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/community-services-statistics-for-children-young-people-and-adults/october-2017&quot;                                                                                                                                                                     
+## [122] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/february-2018&quot;                                                                                                                                                                                                  
+## [123] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/final-seniority-factors/2014-15&quot;                                                                                                                                                                                                                     
+## [124] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2016-to-march-2017-february-2018-release&quot;                                                                                     
+## [125] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2017-to-september-2017&quot;                                                                                                       
+## [126] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/finalised-patient-reported-outcome-measures-proms-in-england-for-groin-hernia-and-varicose-vein-procedures-april-2016-to-march-2017&quot;                                                                         
+## [127] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-december-2017&quot;  
+## [128] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-december-2017&quot;                                                                                                               
+## [129] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-drug-misuse/2018&quot;                                                                                                                                                                                                                      
+## [130] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/personal-social-services-staff-of-social-services-departments/personal-social-services-staff-of-social-services-departments-england-2017&quot;                                                                                                            
+## [131] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/september-2017&quot;                                                                                                                                                                                                
+## [132] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-november-2017&quot;                                                                                                                                                                                    
+## [133] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/breast-screening-programme/breast-screening-programme-england---2016-17&quot;                                                                                                                                                                             
+## [134] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-december-2017-provisional-statistics&quot;                                                                    
+## [135] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-nhs-stop-smoking-services-in-england/statistics-on-nhs-stop-smoking-services-in-england-april-2017-to-september-2017&quot;                                                                                                                  
+## [136] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-october-2017-final-including-reports-on-the-integrated-services-pilot-and-quarter-2-2017-18-data&quot;                     
+## [137] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/fit-notes-issued-by-gp-practices/fit-notes-issued-by-gp-practices-england-september-2017&quot;                                                                                                                                                            
+## [138] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-october-2017-provisional-statistics-including-experimental-report-on-mental-health-and-learning-disability-workforce-up-until-september-2017&quot;                                                      
+## [139] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-vacancies-survey/nhs-vacancy-statistics-england-february-2015-september-2017-provisional-experimental-statistics&quot;                                                                                                                                
+## [140] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-july-2017-to-september-2017&quot;                                                                                                                                                                   
+## [141] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-november-2017&quot;                                                                                                                                     
+## [142] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-october-provisional-november-2017&quot;                                                                                                                         
+## [143] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-august-and-september-2017-experimental-statistics&quot;                                                             
+## [144] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/december-2017&quot;                                                                                                                                                                                                           
+## [145] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/january-2018&quot;                                                                                                                                                                                                   
+## [146] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-november-2017&quot;  
+## [147] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-november-2017&quot;                                                                                                               
+## [148] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard-to-june-2017&quot;                                                                                            
+## [149] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-october-2017&quot;                                                                                                                                                                                     
+## [150] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/august-2017&quot;                                                                                                                                                                                                   
+## [151] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-september-2017-final-including-report-on-the-integrated-services-pilot&quot;                                               
+## [152] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-september-2017-provisional-statistics&quot;                                                                                                                                                             
+## [153] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-staff-earnings-estimates/nhs-staff-earnings-estimates-to-september-2017-provisional-statistics&quot;                                                                                                                                                  
+## [154] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-august-2017&quot;                                                                                                                                                                                   
+## [155] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-november-2017-provisional-statistics&quot;                                                                    
+## [156] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/care-information-choices/mi-care-information-choices-england-december-2017&quot;                                                                                                                                                                          
+## [157] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-september-provisional-october-2017&quot;                                                                                                                        
+## [158] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-october-2017&quot;                                                                                                                                      
+## [159] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/childhood-immunisation-ccg-gp-practice-level-coverage-statistics/childhood-immunisation-ccg-gp-practice-level-coverage-statistics-management-information&quot;                                                                                            
+## [160] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/november-2017&quot;                                                                                                                                                                                                           
+## [161] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/december-2017&quot;                                                                                                                                                                                                  
+## [162] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-october-2017&quot;   
+## [163] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-october-2017&quot;                                                                                                                
+## [164] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/health-survey-for-england/health-survey-for-england-2016&quot;                                                                                                                                                                                            
+## [165] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/health-and-care-of-people-with-learning-disabilities/health-and-care-of-people-with-learning-disabilities-experimental-statistics-2016-to-2017&quot;                                                                                                      
+## [166] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-women-s-smoking-status-at-time-of-delivery-england/statistics-on-women-s-smoking-status-at-time-of-delivery-england-quarter-2-2017-18&quot;                                                                                                 
+## [167] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/registered-blind-and-partially-sighted-people/registered-blind-and-partially-sighted-people-england-2016-17&quot;                                                                                                                                         
+## [168] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/july-2017&quot;                                                                                                                                                                                                     
+## [169] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/data-on-written-complaints-in-the-nhs/data-on-written-complaints-in-the-nhs-2017-18-quarter-2-experimental&quot;                                                                                                                                          
+## [170] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-fgm-july-2017-to-september-2017-experimental-statistics-report&quot;                                                                                                                                  
+## [171] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-september-2017&quot;                                                                                                                                                                                   
+## [172] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/ccg-prescribing-data/july-to-september-2017&quot;                                                                                                                                                                                                         
+## [173] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-annual-reports-on-the-use-of-iapt-services/annual-report-2016-17&quot;                                                                                                                                                            
+## [174] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-dental-statistics/nhs-dental-statistics-for-england-2017-18-first-quarterly-report&quot;                                                                                                                                                              
+## [175] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-bulletin/mental-health-bulletin-2016-17-annual-report&quot;                                                                                                                                                                                 
+## [176] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-october-2017-provisional-statistics&quot;                                                                     
+## [177] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-outpatient-activity/hospital-outpatient-activity-2016-17&quot;                                                                                                                                                                                   
+## [178] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-august-2017-final-including-report-on-the-integrated-services-pilot&quot;                                                  
+## [179] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/prescribing-costs-in-hospitals-and-the-community/2016-17&quot;                                                                                                                                                                                            
+## [180] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-august-2017-provisional-statistics&quot;                                                                                                                                                                
+## [181] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-july-2017&quot;                                                                                                                                                                                     
+## [182] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/as-at-30-september-2017-provisional-experimental-statistics&quot;                                                                                                                                                   
+## [183] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disabilities-health-check-scheme/learning-disabilities-health-check-scheme-england-quarters-1-and-2-2017-18&quot;                                                                                                                                
+## [184] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-september-2017&quot;                                                                                                                                    
+## [185] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-august-provisional-september-2017&quot;                                                                                                                         
+## [186] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/safeguarding-adults/2016-17&quot;                                                                                                                                                                                                                         
+## [187] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/october-2017&quot;                                                                                                                                                                                                            
+## [188] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/november-2017&quot;                                                                                                                                                                                                  
+## [189] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/national-diabetes-audit-report-1-care-processes-and-treatment-targets-2016-17&quot;                                                                                                                                               
+## [190] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-monthly-patient-reported-outcome-measures-proms-in-england-april-2017-to-june-2017&quot;                                                                                                              
+## [191] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-september-2017&quot; 
+## [192] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-september-2017&quot;                                                                                                              
+## [193] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-maternity-statistics/2016-17&quot;                                                                                                                                                                                                                    
+## [194] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2016-to-march-2017-november-release&quot;                                                                                          
+## [195] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-july-2017-experimental-statistics&quot;                                                                             
+## [196] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-pharmaceutical-services/general-pharmaceutical-services-england-2007-08-to-2016-17&quot;                                                                                                                                                          
+## [197] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/cervical-screening-programme/cervical-screening-programme-england-2016-17&quot;                                                                                                                                                                           
+## [198] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-august-2017&quot;                                                                                                                                                                                      
+## [199] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/smoking-drinking-and-drug-use-among-young-people-in-england/2016&quot;                                                                                                                                                                                    
+## [200] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-capacity-act-2005-deprivation-of-liberty-safeguards-assessments/mental-capacity-act-2005-deprivation-of-liberty-safeguards-england-2016-17-official-statistics&quot;                                                                               
+## [201] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/june-2017&quot;                                                                                                                                                                                                     
+## [202] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-nhs-stop-smoking-services-in-england/statistics-on-nhs-stop-smoking-services-in-england-april-2017-to-june-2017&quot;                                                                                                                       
+## [203] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-pulmonary-hypertension-audit/national-audit-of-pulmonary-hypertension-8th-annual-report&quot;                                                                                                                                                    
+## [204] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/fit-notes-issued-by-gp-practices/fit-notes-issued-by-gp-practices-england-june-2017&quot;                                                                                                                                                                 
+## [205] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/quality-and-outcomes-framework-achievement-prevalence-and-exceptions-data/quality-and-outcomes-framework-qof-2016-17&quot;                                                                                                                                
+## [206] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-september-2017-provisional-statistics&quot;                                                                   
+## [207] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/adult-social-care-activity-and-finance-report/adult-social-care-activity-and-finance-report-england-2016-17&quot;                                                                                                                                         
+## [208] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-july-2017-provisional-statistics&quot;                                                                                                                                                                  
+## [209] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-april-2017-to-june-2017&quot;                                                                                                                                                                       
+## [210] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-july-2017-final-including-reports-on-the-integrated-services-pilot-and-quarter-1-2017-18-data&quot;                        
+## [211] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/national-diabetes-prevention-programme-pilot-study&quot;                                                                                                                                                                          
+## [212] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-august-2017&quot;                                                                                                                                       
+## [213] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-child-measurement-programme/2016-17-school-year&quot;                                                                                                                                                                                            
+## [214] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-july-provisional-august-2017&quot;                                                                                                                              
+## [215] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-accident--emergency-activity/2016-17&quot;                                                                                                                                                                                                       
+## [216] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/patients-registered-at-a-gp-practice-october-2017-special-topic-practice-list-size-comparison-october-2013-to-october-2017&quot;                                                                                     
+## [217] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/september-2017&quot;                                                                                                                                                                                                          
+## [218] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-august-2017&quot;    
+## [219] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-august-2017&quot;                                                                                                                 
+## [220] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-pregnancy-in-diabetes-audit/national-pregnancy-in-diabetes-annual-report-2016&quot;                                                                                                                                                              
+## [221] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-footcare-audit/national-diabetes-footcare-audit-hospital-admissions-report-2014-2016&quot;                                                                                                                                              
+## [222] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard-to-march-2017&quot;                                                                                           
+## [223] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-june-2017-experimental-statistics&quot;                                                                             
+## [224] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-act-statistics-annual-figures/mental-health-act-statistics-annual-figures-2016-17-experimental-statistics&quot;                                                                                                                             
+## [225] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-july-2017&quot;                                                                                                                                                                                        
+## [226] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/sexual-and-reproductive-health-services/sexual-and-reproductive-health-services-england-2016-17&quot;                                                                                                                                                     
+## [227] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/personal-social-services-adult-social-care-survey/personal-social-services-adult-social-care-survey-england-2016-17&quot;                                                                                                                                 
+## [228] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/may-2017&quot;                                                                                                                                                                                                      
+## [229] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2016-17&quot;                                                                                                                                                                                                     
+## [230] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-august-2017-provisional-statistics&quot;                                                                      
+## [231] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/estates-returns-information-collection/estates-return-information-collection-2016-17&quot;                                                                                                                                                                
+## [232] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-june-2017-final-including-reports-on-the-integrated-services-pilot&quot;                                                   
+## [233] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/care-information-choices/mi-care-information-choices-england-september-2017&quot;                                                                                                                                                                         
+## [234] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-june-2017-provisional-statistics&quot;                                                                                                                                                                  
+## [235] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-staff-earnings-estimates/nhs-staff-earnings-estimates-to-june-2017-provisional-statistics&quot;                                                                                                                                                       
+## [236] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-may-2017&quot;                                                                                                                                                                                      
+## [237] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/investment-in-general-practice/investment-in-general-practice-2012-13-to-2016-17-england-wales-northern-ireland-and-scotland&quot;                                                                                                                        
+## [238] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-payments-to-general-practice/nhs-payments-to-general-practice-england-2016-17&quot;                                                                                                                                                                   
+## [239] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/childhood-vaccination-coverage-statistics/childhood-vaccination-coverage-statistics-england-2016-17&quot;                                                                                                                                                 
+## [240] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-july-2017&quot;                                                                                                                                         
+## [241] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-june-provisional-july-2017&quot;                                                                                                                                
+## [242] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/august-2017&quot;                                                                                                                                                                                                             
+## [243] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-july-2017&quot;                                                                                                                   
+## [244] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/data-on-written-complaints-in-the-nhs/data-on-written-complaints-in-the-nhs-2017-18-quarter-1-experimental&quot;                                                                                                                                          
+## [245] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/data-on-written-complaints-in-the-nhs/data-on-written-complaints-in-the-nhs-2016-17&quot;                                                                                                                                                                 
+## [246] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/september-2017&quot;                                                                                                                                                                                                 
+## [247] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/dental-working-hours/dental-working-hours-2014-15-and-2015-16-wales-motivation-analysis-supplementary-report&quot;                                                                                                                                        
+## [248] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/gp-earnings-and-expenses-estimates/gp-earnings-and-expenses-estimates-2015-16&quot;                                                                                                                                                                       
+## [249] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/dental-earnings-and-expenses-estimates/2015-16/content-copy&quot;                                                                                                                                                                                         
+## [250] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/gp-earnings-and-expenses-estimates/gp-earnings-and-expenses-time-series&quot;                                                                                                                                                                             
+## [251] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-may-2017-experimental-statistics&quot;                                                                              
+## [252] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-july-2017&quot;                    
+## [253] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-women-s-smoking-status-at-time-of-delivery-england/statistics-on-women-s-smoking-status-at-time-of-delivery-england-quarter-1-2017-18&quot;                                                                                                 
+## [254] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/april-2017&quot;                                                                                                                                                                                                    
+## [255] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-fgm-april-2017-to-june-2017-experimental-statistics-report&quot;                                                                                                                                      
+## [256] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-june-2017&quot;                                                                                                                                                                                        
+## [257] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/ccg-prescribing-data/april-to-june-2017&quot;                                                                                                                                                                                                             
+## [258] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-dental-statistics/nhs-dental-statistics-for-england-2016-17&quot;                                                                                                                                                                                     
+## [259] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/fit-notes-issued-by-gp-practices/fit-notes-issued-by-gp-practices-england-december-2014-march-2017&quot;                                                                                                                                                  
+## [260] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-july-2017-provisional-statistics&quot;                                                                        
+## [261] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-may-2017-final-including-reports-on-the-integrated-services-pilot&quot;                                                    
+## [262] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-june-2017&quot;                                                                                                                                         
+## [263] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-may-provisional-june-2017&quot;                                                                                                                                 
+## [264] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-may-2017-provisional-statistics&quot;                                                                                                                                                                   
+## [265] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-april-2017&quot;                                                                                                                                                                                    
+## [266] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/healthcare-workforce-statistics/healthcare-workforce-statistics-march-2017-experimental&quot;                                                                                                                                                             
+## [267] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/as-at-31-march-2017-experimental-statistics&quot;                                                                                                                                                                   
+## [268] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services/as-at-30-june-2017-provisional-experimental-statistics&quot;                                                                                                                                                        
+## [269] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/statistics-on-nhs-stop-smoking-services-in-england/statistics-on-nhs-stop-smoking-services-england-april-2016-to-march-2017&quot;                                                                                                                         
+## [270] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-june-2017&quot;      
+## [271] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-may-2017-and-june-2017&quot;                                                                                                      
+## [272] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-led-assessments-of-the-care-environment-place/patient-led-assessments-of-the-care-environment-2017-england&quot;                                                                                                                                  
+## [273] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/august-2017&quot;                                                                                                                                                                                                    
+## [274] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-april-2017-experimental-statistics&quot;                                                                            
+## [275] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/july-2017&quot;                                                                                                                                                                                                               
+## [276] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/provisional-quarterly-patient-reported-outcome-measures-proms-in-england-april-2016-to-march-2017-august-2017-release&quot;                                                                                       
+## [277] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disabilities-health-check-scheme/learning-disabilities-health-check-scheme-england-quarter-4-2016-17&quot;                                                                                                                                       
+## [278] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/gp-contract-services/gp-contract-services-england-2016-17&quot;                                                                                                                                                                                           
+## [279] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patient-reported-outcome-measures-proms/finalised-patient-reported-outcome-measures-proms-in-england-april-2015-to-march-2016&quot;                                                                                                                       
+## [280] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-may-2017&quot;                                                                                                                                                                                         
+## [281] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/personal-social-services-survey-of-adult-carers/personal-social-services-survey-of-adult-carers-in-england-2016-17&quot;                                                                                                                                  
+## [282] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/march-2017&quot;                                                                                                                                                                                                    
+## [283] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2017-to-may-2017&quot;       
+## [284] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-april-2017&quot;                                                                                                                  
+## [285] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/prescribing-for-diabetes/prescribing-for-diabetes-england-2006-07-to-2016-17&quot;                                                                                                                                                                        
+## [286] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-june-2017-provisional-statistics&quot;                                                                        
+## [287] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-april-2017-provisional-statistics&quot;                                                                                                                                                                 
+## [288] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-vacancies-survey/nhs-vacancy-statistics-england-february-2015-march-2017-provisional-experimental-statistics&quot;                                                                                                                                    
+## [289] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-sickness-absence-rates/nhs-sickness-absence-rates-january-2017-to-march-2017-and-annual-summary-2010-11-to-2016-17&quot;                                                                                                                              
+## [290] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-april-2017-final-including-reports-on-the-integrated-services-pilot-and-quarter-4-2016-17&quot;                            
+## [291] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/mental-health-services-monthly-statistics/mental-health-services-monthly-statistics-final-april-provisional-may-2017&quot;                                                                                                                                
+## [292] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/patients-registered-at-a-gp-practice/july-2017&quot;                                                                                                                                                                                                      
+## [293] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-continuing-healthcare-activity/nhs-continuing-healthcare-activity-statistics-for-england-quarter-4-2016-17&quot;                                                                                                                                      
+## [294] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/2016-17&quot;                                                                                                                                                                                                                 
+## [295] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/recorded-dementia-diagnoses/june-2017&quot;                                                                                                                                                                                                               
+## [296] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/the-national-diabetes-audit-insulin-pump-report-2015-16&quot;                                                                                                                                                                     
+## [297] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/national-diabetes-audit-complications-and-mortality-2015-2016&quot;                                                                                                                                                               
+## [298] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-pulmonary-hypertension-audit/national-audit-of-pulmonary-hypertension-nhs-england-specialised-services-quality-dashboard-2016-17&quot;                                                                                                           
+## [299] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard/nice-technology-appraisals-in-the-nhs-in-england-innovation-scorecard-to-december-2016&quot;                                                                                        
+## [300] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/children-and-young-people-s-health-services-monthly-statistics/children-and-young-people-s-health-services-monthly-statistics-england-march-2017-experimental-statistics&quot;                                                                            
+## [301] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/practice-level-prescribing-data/presentation-level-april-2017&quot;                                                                                                                                                                                       
+## [302] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/out-of-area-placements-in-mental-health-services/out-of-area-placements-in-mental-health-services-may-2017&quot;                                                                                                                                          
+## [303] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/maternity-services-monthly-statistics/february-2017&quot;                                                                                                                                                                                                 
+## [304] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-bowel-cancer-audit/national-bowel-cancer-audit-short-reports-2017&quot;                                                                                                                                                                          
+## [305] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/female-genital-mutilation/female-genital-mutilation-fgm-annual-report-2016-17-pas&quot;                                                                                                                                                                   
+## [306] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/general-ophthalmic-services-activity-statistics/general-ophthalmic-services-activity-statistics-england-year-ending-31-march-2017&quot;                                                                                                                   
+## [307] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/prescriptions-dispensed-in-the-community/prescriptions-dispensed-in-the-community-statistics-for-england-2006-2016-pas&quot;                                                                                                                              
+## [308] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/learning-disability-services-statistics/learning-disability-services-monthly-statistics-england-commissioner-census-assuring-transformation-may-2017-provisional-statistics&quot;                                                                         
+## [309] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/hospital-episode-statistics-for-admitted-patient-care-outpatient-and-accident-and-emergency-data/provisional-monthly-hospital-episode-statistics-for-admitted-patient-care-outpatients-and-accident-and-emergency-data-april-2016-to-march-2017-m13&quot; 
+## [310] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/accident-and-emergency-quality-indicators/provisional-accident-and-emergency-quality-indicators-england-by-provider-for-march-2017&quot;                                                                                                                  
+## [311] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/national-diabetes-audit/national-diabetes-transition-audit-2003-2014&quot;                                                                                                                                                                                
+## [312] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/psychological-therapies-report-on-the-use-of-iapt-services/psychological-therapies-reports-on-the-use-of-iapt-services-england-march-2017-final-including-reports-on-the-integrated-services-pilot&quot;                                                  
+## [313] &quot;https://digital.nhs.uk/data-and-information/publications/statistical/nhs-workforce-statistics/nhs-workforce-statistics-march-2017-provisional-statistics&quot;</code></pre>
+<p>We now have a list of all the subpages for each topic.</p>
+<p>We can now try and identify all the relevant csv or xlsx files on each page. We can use the <code>find_nhsd_csv</code> function for this, and <code>find_nhsd_titles</code> for metadata.</p>
+</div>
+<div id="find-csvxlsx" class="section level2">
+<h2>Find csv/xlsx</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">csv &lt;-<span class="st"> </span><span class="kw">map</span>(links, <span class="cf">function</span>(x) <span class="kw">find_nhsd_csv</span>(x))</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">titles &lt;-<span class="st"> </span><span class="kw">map</span>(links, <span class="cf">function</span>(x) <span class="kw">get_nhsd_titles</span>(x))</a>
+<a class="sourceLine" id="cb4-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="kw">names</span>(csv) &lt;-<span class="st"> </span>titles</a>
+<a class="sourceLine" id="cb4-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb4-7" data-line-number="7">csv_flat &lt;-<span class="st"> </span><span class="kw">flatten</span>(csv)</a></code></pre></div>
+<p>This produces a list of 313 sets of csv/xlsx files we can download. There are 1183 files in all.</p>
+<p>We can in read in csv files directly from the link (xlsx files need to be downloaded first). Some are zip files which need to be excluded and handled separately.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">csvs &lt;-<span class="st"> </span>csv_flat <span class="op">%&gt;%</span><span class="st"> </span>.[<span class="kw">grepl</span>(<span class="st">&quot;csv$&quot;</span>, .)] </a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb5-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="kw">head</span>(csvs)</a></code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;https://files.digital.nhs.uk/EA/35880E/gene-opht-serv-acti-eng-year-end-mar-18-anne-c.csv&quot;
+## 
+## [[2]]
+## [1] &quot;https://files.digital.nhs.uk/09/F11AF4/ESR_ABSENCE_annual_csv_HEE.csv&quot;
+## 
+## [[3]]
+## [1] &quot;https://files.digital.nhs.uk/0B/4C7DF5/msms-apr18-exp-data.csv&quot;
+## 
+## [[4]]
+## [1] &quot;https://files.digital.nhs.uk/DE/487DB4/gp-fit-note-eng-csv-fn-ccg-jul-18.csv&quot;
+## 
+## [[5]]
+## [1] &quot;https://files.digital.nhs.uk/B2/102253/gp-fit-note-eng-csv-fn-dur-jul-18.csv&quot;
+## 
+## [[6]]
+## [1] &quot;https://files.digital.nhs.uk/22/EE66D9/gp-fit-note-eng-csv-ep-dur-jul-18.csv&quot;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">downloads &lt;-<span class="st"> </span><span class="kw">map</span>(csvs[<span class="dv">12</span>], read_csv, <span class="dt">na =</span> <span class="st">&quot;*&quot;</span>)</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="kw">head</span>(downloads)</a></code></pre></div>
+<pre><code>## [[1]]
+## # A tibble: 7,148 x 10
+##    PUBLICATION     EXTRACT_DATE TYPE  CCG_CODE ONS_CCG_CODE CODE  POSTCODE
+##    &lt;chr&gt;           &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;   
+##  1 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL1 3RT 
+##  2 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL3 6HZ 
+##  3 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL3 9JP 
+##  4 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL1 4YL 
+##  5 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL3 8SQ 
+##  6 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL3 7JR 
+##  7 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL1 5JN 
+##  8 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL3 0PD 
+##  9 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL2 2DS 
+## 10 GP_PRAC_PAT_LI… 01JUL2018    GP    00C      E38000042    A830… DL2 1BY 
+## # ... with 7,138 more rows, and 3 more variables: SEX &lt;chr&gt;, AGE &lt;chr&gt;,
+## #   NUMBER_OF_PATIENTS &lt;int&gt;</code></pre>
+<p>We can see some cleaning will be needed to remove excess columns, convert character fields to numeric an so on.</p>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
