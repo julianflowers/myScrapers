@@ -141,6 +141,68 @@ head(data)
 
 ```
 
+## Analysing Duncan Selbie's friday messages
+
+Using simple functions it is relatively easy to scrape Duncan Selbie's blogs into a data frame for further analysis.
+
+The base url is https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/, and there are 8 pages of results so the first task is to create a list of urls.
+
+```{r}
+
+url_ds <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
+url_ds1 <- paste0(url_ds, "page/", 2:8)
+urls_ds <- c(url_ds, url_ds1)
+
+```
+
+Then we can extract links and isolate those specific to the friday messages
+
+```{r}
+
+links <- map(urls_ds, ~(get_page_links(.x))) 
+
+friday_message <- links %>% flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
+
+head(friday_message)
+
+```
+
+and then extract blog text:
+
+```{r}
+library(tm)
+library(magrittr)
+
+blog_text <- map(friday_message, ~(get_page_text(.x)))
+blog_text <- map(blog_text, ~(str_remove(.x, "\\n")))
+blog_text <- map(blog_text, ~(str_remove(.x, "    GOV.UK blogs use cookies to make the site simpler. Find out more about cookies\n  ")))
+blog_text <- map(blog_text, ~(str_remove(.x, "Dear everyone")))
+
+blog_title <- map(blog_text, 2)
+names(blog_text) <- blog_title
+
+blog_text1 <- map(blog_text, extract, 5:11)
+blog_text2 <- map(blog_text1, data.frame)
+blog_text2 <- map_df(blog_text2, bind_rows)
+blog_text2 <- blog_text2 %>% mutate(text = clean_texts(.x..i..))
+
+```
+
+
+We can then visualise with, for example, a wordcloud.
+
+```{r}
+library(quanteda)
+
+corp <- corpus(blog_text2$text)
+dfm <- dfm(corp, ngrams = 2, remove = c("government_licence", "open_government", "public_health", "official_blog", "blog_public", "health_england", "cancel_reply", "content available", "health_blog", "licence_v", "best_wishes", "otherwise_stated", "except_otherwise", "friday_messages", "best_wishes", 
+                                        "available_open"))
+
+textplot_wordcloud(dfm)
+
+```
+
+
 ## Additional functions
 
 I have added a few functions to the package.
@@ -155,6 +217,15 @@ dsph %>%
 
 ```
 
+`get_phe_catalogue` identifies all the PHE publications on GOV.UK. For this function you have to set the n = argument. We recommend starting at n = 110. This produces an interactive searchable table of links. 
+
+```{r}
+
+cat <- get_phe_catalogue(n = 110)
+
+cat
+
+```
 
 
 

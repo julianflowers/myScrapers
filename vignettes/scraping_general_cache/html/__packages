@@ -15,3 +15,8 @@ rvest
 downloader
 readxl
 bindrcpp
+Rcrawler
+NLP
+tm
+quanteda
+magrittr
