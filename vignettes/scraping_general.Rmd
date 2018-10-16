@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
 
 library(tidyverse)
 library(myScrapers)
+library(Rcrawler)
 
 ```
 
@@ -33,6 +34,11 @@ The basic toolkit is:
 * a Url (link) you want to obtain data from
 * the `rvest` package in R or `beautiful soup` in Python
 * the [selector gadget](https://selectorgadget.com/) extension for web browsers
+
+A basic knowledge of html is helpful - especially elements and tags. For example paragraphs are defined with the `<p>` tag, links with the `<a>` tag and so on. 
+("https://www.w3schools.com/html/html_intro.asp")`
+
+Selectorgadget enables finding tags used in style sheets if page layout is more sophisticated.
 
 ## Installing the package
 
@@ -93,7 +99,7 @@ get_page_links(urls) %>%
 
 We can then use the `downloader` package to download the pdfs:
 
-```{r}
+```{r, results="hide"}
 
 library(downloader)
 
@@ -111,9 +117,9 @@ get_page_links(urls) %>%
 
 ## Identifiying data (spreadsheet links)
 
-We can take a similar approach to spreadsheet.
+We can take a similar approach to spreadsheets.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, results="hide"}
 urls <- "https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins-for-2018"
 
 get_page_links(urls) %>%
@@ -140,6 +146,13 @@ head(data)
 
 
 ```
+
+## Scraping text
+
+This follows the same principle. The function `get_page_text` is designed to extract text from a webpage. For example, we can extract the text from an article about Matt Hancock's description of "predictive prevention'.
+
+> `r get_page_text("https://www.thetimes.co.uk/article/nhs-will-use-phone-data-to-predict-threats-to-your-health-r7085zqfq") %>% .[1:4]`
+
 
 ## Analysing Duncan Selbie's friday messages
 
@@ -191,7 +204,7 @@ blog_text2 <- blog_text2 %>% mutate(text = clean_texts(.x..i..))
 
 We can then visualise with, for example, a wordcloud.
 
-```{r}
+```{r fig.height=8, fig.width=8}
 library(quanteda)
 
 corp <- corpus(blog_text2$text)
@@ -219,9 +232,9 @@ dsph %>%
 
 `get_phe_catalogue` identifies all the PHE publications on GOV.UK. For this function you have to set the n = argument. We recommend starting at n = 110. This produces an interactive searchable table of links. 
 
-```{r}
+```{r, cache=TRUE}
 
-cat <- get_phe_catalogue(n = 110)
+cat <- get_phe_catalogue()
 
 cat
 
