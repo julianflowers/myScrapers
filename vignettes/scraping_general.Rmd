@@ -53,9 +53,9 @@ devtools::install_github("julianflowers/myScrapers")
 
 ## Simple web-scraping
 
-Web scraping is a set of techniques to obtain information or data from websites. In R the `rvest` and `httr` packages are the mainstay of scraping. These import and read html and xml pages into R which can then be parsed and analysed.
+Web scraping is a set of techniques to obtain information or data from websites. In R the `rvest` and `httr` packages are the mainstay of scraping (there is also `Rcrawler`). These import and read html and xml pages into R which can then be parsed and analysed.
 
-In `myScrapers` there are 2 functions:
+In `myScrapers` there are 2 primary functions built on these:
 
 * `get_page_links` which identifies the links on a webpage
 * `get_page_text` which extracts text from a webpage
@@ -100,14 +100,14 @@ get_page_links(urls) %>%
 We can then use the `downloader` package to download the pdfs:
 
 ```{r, results="hide"}
-
+## not run
 library(downloader)
 
-get_page_links(urls) %>%
+(get_page_links(urls) %>%
   .[grepl("pdf$", .)] %>%
   head(10) %>%
   unique() %>%
-  map(., ~download(.x, destfile = basename(.x)))
+  map(., ~download(.x, destfile = basename(.x))))
   
 
 
@@ -234,11 +234,64 @@ dsph %>%
 
 ```{r, cache=TRUE}
 
-cat <- get_phe_catalogue()
+cat <- get_phe_catalogue(n=110)
 
 cat
 
 ```
 
+
+## Reviewing parlimentary questions (PQs)
+
+We have added a `get_pq` function built on the `hansard` package to extract PQs addressed to,  answered by or mentioning PHE. This takes a start date as an argument in the form yyyy-mm-dd.
+
+```{r pqs}
+
+
+pqs <- get_pqs(start_date = "2018-10-01")
+
+head(pqs)
+
+
+```
+
+We can look at the categories of questions asked.
+
+
+```{r}
+
+pqs %>%
+  group_by(hansard_category) %>%
+  count() %>%
+  arrange(-n) %>%
+  top_n(10)
+
+```
+
+## Using `myScrapers` to extact NICE guidance
+
+We can use the toolkit to extract NICE Public Health Guidance as follows:
+
+* Firstly we'll identfy the URLs for NICE PH guiance - they related to https://www.nice.org.uk/guidance/published?type=ph
+
+* Then create a full URL for recommendations
+
+* The extract the text
+
+
+
+```{r}
+
+
+url <- "https://www.nice.org.uk/guidance/published?type=ph"
+
+links <- get_page_links(url)[13:22] ##first 10  sets of guidance
+links1 <- map(links, ~(paste0("https://www.nice.org.uk", .x, "/chapter/Recommendations")))
+
+recommendations <- map(links1, ~(get_page_text(.x))) %>% map(., data.frame) 
+head(recommendations) %>% 
+  knitr::kable()
+
+```
 
 
