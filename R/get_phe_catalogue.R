@@ -63,4 +63,3 @@ get_phe_catalogue <- function(url = "https://www.gov.uk/government/publications?
 }
 
 
-get_phe_catalogue("https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", n = 100)
