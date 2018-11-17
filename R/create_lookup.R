@@ -18,9 +18,6 @@ create_lookup <- function(...){
 }  
   
   
-dict <- create_lookup(phe = c("public, health england", "phe"), 
-              ftips = "fingertips")
-  
-  
+
   
   
