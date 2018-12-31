@@ -1,5 +1,7 @@
 get_nhsd_titles <- function(link){
   
+  require(tm)
+  
   csv_title <- link %>%
     read_html() %>%
     html_nodes(".attachment") %>%
