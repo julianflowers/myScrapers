@@ -11,11 +11,4 @@ get_nhsd_urls <- function(url){
 }  
 
 
-url <- "https://digital.nhs.uk/search/document-type/publication/publicationStatus/true?page="
-
-urls <- paste0(url, 1:200)
-
-
-map(urls,  function(x) get_nhsd_urls(x))
-
 
