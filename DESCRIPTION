@@ -5,7 +5,7 @@ Version: 0.1.0
 Author: person("Julian", "Flowers", email = "julian.flowers@phe.gov.uk", role = c("aut", "cre"))
 Maintainer: The package maintainer <julian.flowers@phe.gov.uk>
 Description: Various functions which download data from PHE websites on .gov.uk.
-    Including PHE Publications, PHE blogs, PHE statistics
+    Including PHE Publications, PHE blogs, PHE statistics, Hansard, pubmed
 License: OGL
 Encoding: UTF-8
 LazyData: true
