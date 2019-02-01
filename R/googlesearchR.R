@@ -23,10 +23,10 @@ googlesearchR <- function(search, n = 100 ){
   links <- str_extract_all(links, "^http.+")
   links <- str_replace_all(links, "http://webcache.googleusercontent.com/search", "") 
   links <- str_extract_all(links, "^http.+")
-  links <- flatten(links)
+  links <- purrr::flatten(links)
   links <- links[12:length(links)]
   
-  return(links)
+  print(links)
   
 }
 

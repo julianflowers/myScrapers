@@ -37,7 +37,7 @@ result <- result %>%
   pull(summary) %>%
   unique()
 
-#cat(result)
+result
 
 }
 
