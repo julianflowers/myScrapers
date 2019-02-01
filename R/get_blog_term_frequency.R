@@ -11,9 +11,9 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
   
   links_df <- links %>%
     #.[grepl("pdf", .)] %>%
-    map(., ~(get_page_text(.x))) %>%
-    map(., ~(paste(.x, collapse = ","))) %>%
-    map(., data.frame) %>%
+    purrr::map(., ~(get_page_text(.x))) %>%
+    purrr::map(., ~(paste(.x, collapse = ","))) %>%
+    purrr::map(., data.frame) %>%
     bind_rows(., .id = "date") 
   
   corpus <- corpus(links_df$.x..i..)
