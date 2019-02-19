@@ -14,9 +14,9 @@
 
 get_nice_ph_guidance <- function(url){
 
-require(rvest)
-require(Rcrawler)  
-require(tidyverse, quietly = TRUE)  
+library(rvest)
+library(tidyverse, quietly = TRUE)  
+library(purrr)  
 
 
 
@@ -69,17 +69,25 @@ results
 
 url_list <- paste0("https://www.nice.org.uk/guidance/ph", c(1,3, 5:32, 35:36, 38:56))
 
-nice_guidance <- map_df(url_list, function(x) get_nice_ph_guidance(x))
+nice_guidance <- purrr::map_df(url_list, function(x) get_nice_ph_guidance(x))
 
 
 
 
 
 
+library(myScrapers)
 
+safe_summary <- safely(text_summariser)
 nice_guidance %>%
   mutate(published = lead(date)) %>%
   filter(date!=published, !str_detect(date, "Last")) %>%
   mutate(updated = ifelse(str_detect(published, "Last"), published, NA)) %>%
   select(ref, title, date, updated, rec) %>%
+  slice(20:43) %>%
+  mutate(rec = map(rec, ~(safe_summary(.x, 6))), 
+         rec = map(rec, "result")) %>%
+  filter(rec != "NULL") %>%
+  unnest() %>%
   DT::datatable()
+    
