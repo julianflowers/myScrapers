@@ -11,9 +11,9 @@ get_text_term_frequency <- function(l, d, n = 1){
   
   links_df <- l %>%
     .[grepl("pdf", .)] %>%
-    map(., ~(safe_readtext(.x))) %>%
-    map(., "result") %>%
-    map_df(., data.frame)
+    purrr::map(., ~(safe_readtext(.x))) %>%
+    purrr::map(., "result") %>%
+    purrr::map_df(., data.frame)
 
   corpus <- corpus(links_df$text)
 

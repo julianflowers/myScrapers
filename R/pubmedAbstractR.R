@@ -37,8 +37,8 @@ abstracts <- as.tibble(cbind(title = fetch@ArticleTitle,
 ## add MeSH headings
 
 if(keyword == TRUE){
-mesh <- map(fetch@Mesh,  "Heading") %>%
-  map(., data.frame) 
+mesh <- purrr::map(fetch@Mesh,  "Heading") %>%
+  purrr::map(., data.frame) 
 
 DOI -> names(mesh)
 
