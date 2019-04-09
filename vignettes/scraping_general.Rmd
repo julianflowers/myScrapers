@@ -27,7 +27,7 @@ library(Rcrawler)
 
 This vignette illustrates some of the basics of web-scraping and some features of the `myScrapers` package - in particular simple web-scraping functions. We also show some functions in the package specifically designed to retrieve public health information for public health practitioners.
 
-## Webscraping basics in R
+## Web scraping basics in R
 
 The basic toolkit is:
 
@@ -55,10 +55,43 @@ devtools::install_github("julianflowers/myScrapers")
 
 Web scraping is a set of techniques to obtain information or data from websites. In R the `rvest` and `httr` packages are the mainstay of scraping (there is also `Rcrawler`). These import and read html and xml pages into R which can then be parsed and analysed.
 
-In `myScrapers` there are 2 primary functions built on these:
+In Python `beautiful soup` is the main package for web scraping.
+
+Both are built on top of web commands which underpin the exchange of information across the internet. 
+
+In R, given any weblink or url we can read the site with the `GET` function in `httr`.
+
+Lets use https:\\fingertips.phe.org.uk...
+
+```{r read fingertips}
+
+url <- "https://fingertips.phe.org.uk"
+
+html <- GET(url)
+
+html
+
+```
+
+```{r using rvest}
+
+rvest <- read_html(url)
+rvest
+
+rvest %>%
+  html_nodes("a") %>%
+  .[1] %>%
+  html_attr("href")
+```
+
+
+
+In `myScrapers` there are 4 primary functions built on these:
 
 * `get_page_links` which identifies the links on a webpage
 * `get_page_text` which extracts text from a webpage
+* `get_page_docs` which identifies pdf or doc files on a page
+* `get_page_csv` which finds csv files and spreadsheets on a page
 
 ## Examples
 
@@ -107,7 +140,7 @@ library(downloader)
   .[grepl("pdf$", .)] %>%
   head(10) %>%
   unique() %>%
-  map(., ~download(.x, destfile = basename(.x))))
+  purrr::map(., ~download(.x, destfile = basename(.x))))
   
 
 
@@ -115,7 +148,7 @@ library(downloader)
 ```
 
 
-## Identifiying data (spreadsheet links)
+## Identifying data (spreadsheet links)
 
 We can take a similar approach to spreadsheets.
 
@@ -126,7 +159,7 @@ get_page_links(urls) %>%
   .[grepl("xls.?$", .)] %>%
   head(10) %>%
   unique() %>%
-  map(., ~download(.x, destfile = basename(.x)))
+  purrr::map(., ~downloader::download(.x, destfile = basename(.x)))
   
 
 ```
@@ -138,7 +171,7 @@ Having downloaded the reports or spreadsheets it is now straightforward to impor
 library(readxl)
 files <- list.files(pattern = ".xls")
 
-data <- map(files, ~(read_excel(.x,  sheet = "Local Authority", na = "*", 
+data <- purrr::map(files, ~(read_excel(.x,  sheet = "Local Authority", na = "*", 
     skip = 4)))
 
 head(data)
@@ -154,11 +187,11 @@ This follows the same principle. The function `get_page_text` is designed to ext
 > `r get_page_text("https://www.thetimes.co.uk/article/nhs-will-use-phone-data-to-predict-threats-to-your-health-r7085zqfq") %>% .[1:4]`
 
 
-## Analysing Duncan Selbie's friday messages
+## Analysing Duncan Selbie's Friday messages
 
 Using simple functions it is relatively easy to scrape Duncan Selbie's blogs into a data frame for further analysis.
 
-The base url is https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/, and there are 8 pages of results so the first task is to create a list of urls.
+The base URL is https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/, and there are 8 pages of results so the first task is to create a list of urls.
 
 ```{r}
 
@@ -172,9 +205,9 @@ Then we can extract links and isolate those specific to the friday messages
 
 ```{r}
 
-links <- map(urls_ds, ~(get_page_links(.x))) 
+links <- purrr::map(urls_ds, ~(get_page_links(.x))) 
 
-friday_message <- links %>% flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
+friday_message <- links %>% purrr::flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
 
 head(friday_message)
 
@@ -186,17 +219,17 @@ and then extract blog text:
 library(tm)
 library(magrittr)
 
-blog_text <- map(friday_message, ~(get_page_text(.x)))
-blog_text <- map(blog_text, ~(str_remove(.x, "\\n")))
-blog_text <- map(blog_text, ~(str_remove(.x, "    GOV.UK blogs use cookies to make the site simpler. Find out more about cookies\n  ")))
-blog_text <- map(blog_text, ~(str_remove(.x, "Dear everyone")))
+blog_text <- purrr::map(friday_message, ~(get_page_text(.x)))
+blog_text <- purrr::map(blog_text, ~(str_remove(.x, "\\n")))
+blog_text <- purrr::map(blog_text, ~(str_remove(.x, "    GOV.UK blogs use cookies to make the site simpler. Find out more about cookies\n  ")))
+blog_text <- purrr::map(blog_text, ~(str_remove(.x, "Dear everyone")))
 
-blog_title <- map(blog_text, 2)
+blog_title <- purrr::map(blog_text, 2)
 names(blog_text) <- blog_title
 
-blog_text1 <- map(blog_text, extract, 5:11)
-blog_text2 <- map(blog_text1, data.frame)
-blog_text2 <- map_df(blog_text2, bind_rows)
+blog_text1 <- purrr::map(blog_text, extract, 5:11)
+blog_text2 <- purrr::map(blog_text1, data.frame)
+blog_text2 <- purrr::map_df(blog_text2, bind_rows)
 blog_text2 <- blog_text2 %>% mutate(text = clean_texts(.x..i..))
 
 ```
@@ -211,7 +244,7 @@ corp <- corpus(blog_text2$text)
 dfm <- dfm(corp, ngrams = 2, remove = c("government_licence", "open_government", "public_health", "official_blog", "blog_public", "health_england", "cancel_reply", "content available", "health_blog", "licence_v", "best_wishes", "otherwise_stated", "except_otherwise", "friday_messages", "best_wishes", 
                                         "available_open"))
 
-textplot_wordcloud(dfm)
+textplot_wordcloud(dfm, color = viridis::plasma(n = 10))
 
 ```
 
@@ -241,16 +274,16 @@ cat
 ```
 
 
-## Reviewing parlimentary questions (PQs)
+## Reviewing parliamentary questions (PQs)
 
 We have added a `get_pq` function built on the `hansard` package to extract PQs addressed to,  answered by or mentioning PHE. This takes a start date as an argument in the form yyyy-mm-dd.
 
 ```{r pqs}
 
 
-pqs <- get_pqs(start_date = "2018-10-01")
+pqs <- get_pqs(start_date = "2019-03-01")
 
-head(pqs)
+pqs
 
 
 ```
@@ -268,15 +301,15 @@ pqs %>%
 
 ```
 
-## Using `myScrapers` to extact NICE guidance
+## Using `myScrapers` to extract NICE guidance
 
 We can use the toolkit to extract NICE Public Health Guidance as follows:
 
-* Firstly we'll identfy the URLs for NICE PH guiance - they related to https://www.nice.org.uk/guidance/published?type=ph
+* Firstly we'll identify the URLs for NICE PH guidance - they related to https://www.nice.org.uk/guidance/published?type=ph
 
 * Then create a full URL for recommendations
 
-* The extract the text
+* Then extract the text
 
 
 
@@ -286,10 +319,12 @@ We can use the toolkit to extract NICE Public Health Guidance as follows:
 url <- "https://www.nice.org.uk/guidance/published?type=ph"
 
 links <- get_page_links(url)[13:22] ##first 10  sets of guidance
-links1 <- map(links, ~(paste0("https://www.nice.org.uk", .x, "/chapter/Recommendations")))
+links1 <- purrr::map(links, ~(paste0("https://www.nice.org.uk", .x, "/chapter/Recommendations")))
 
-recommendations <- map(links1, ~(get_page_text(.x))) %>% map(., data.frame) 
-head(recommendations) %>% 
+pander::panderOptions("table.style", "multiline")
+pander::panderOptions("table.alignment.default", "left")
+recommendations <- purrr::map(links1, ~(get_page_text(.x))) %>% purrr::map(., data.frame) 
+head(recommendations, 1) %>% 
   knitr::kable()
 
 ```
