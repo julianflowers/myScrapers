@@ -14,7 +14,7 @@ sentences <- tibble(text = text) %>%
   mutate(sentence_id = row_number()) %>%
   dplyr::select(sentence_id, sentence)
 
-## tokenise sentences into workds
+## tokenise sentences into words
 article_words <- sentences %>%
   unnest_tokens(word, sentence)
 
