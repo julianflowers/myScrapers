@@ -9,6 +9,7 @@ googlesearchR <- function(search, n = 100 ){
   
   search <- str_replace_all(search, " ", "+")
   
+  
   u <- paste0("https://www.google.co.uk/search?q=", search, "&num=", n )
   
   html <- GET(u)
@@ -25,7 +26,6 @@ googlesearchR <- function(search, n = 100 ){
   links <- str_extract_all(links, "^http.+")
   links <- purrr::flatten(links)
   links <- links[12:length(links)]
-  
   print(links)
   
 }
