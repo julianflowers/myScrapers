@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(myScrapers)
 library(Rcrawler)
+library(rvest)
 
 ```
 
@@ -40,6 +41,74 @@ A basic knowledge of html is helpful - especially elements and tags. For example
 
 Selectorgadget enables finding tags used in style sheets if page layout is more sophisticated.
 
+## Using `rvest`
+
+`rvest` is built on the `httr` packages which encapsulates web-web communications. Given a url (weblink) `rvest` will read the page html or xml.
+
+```{r}
+
+url <- "https://www.gov.uk/government/organisations/department-for-education"
+
+read_html(url)[2]
+
+
+```
+
+We can then extract information based on the structure of the html using the tags.
+
+For example we can extract links or paragraphs...
+
+```{r}
+
+read_html(url) %>%
+  html_nodes("a") %>%
+  html_attr("href")
+
+read_html(url) %>%
+  html_nodes("p") %>%
+  .[4] %>%
+  html_text()
+
+
+```
+
+or links...
+
+```{r}
+
+read_html(url) %>%
+  html_nodes("a") %>%
+  .[1:6] %>%
+  html_attr("href")
+
+
+```
+
+## Using selector gadget
+
+Sometimes web pages are laid out in a more complex manner or use style sheets, and the page developers may use individualised tags to layout the page. Selcector gadget can help identify these tags and aid data extraction.
+
+Lets look at PHEs webpages and try to extract infromation.
+
+<https://www.gov.uk/government/organisations/public-health-england>
+
+```{r}
+
+url <- "https://www.gov.uk/government/organisations/public-health-england"
+
+
+read_html(url) %>%
+  html_nodes(".column-half") %>%
+  .[1:10] %>%
+  html_text()
+
+
+```
+
+## myScrapers
+
+We have built a package based on these ideas to facilitate extracting data from webpages.
+
 ## Installing the package
 
 The package is only available on Github and can be downloaded using `devtools`.
@@ -53,12 +122,13 @@ devtools::install_github("julianflowers/myScrapers")
 
 ## Simple web-scraping
 
-Web scraping is a set of techniques to obtain information or data from websites. In R the `rvest` and `httr` packages are the mainstay of scraping (there is also `Rcrawler`). These import and read html and xml pages into R which can then be parsed and analysed.
 
-In `myScrapers` there are 2 primary functions built on these:
+In `myScrapers` there are 2 primary functions built on `rvest`:
 
 * `get_page_links` which identifies the links on a webpage
 * `get_page_text` which extracts text from a webpage
+* `get_page_docs` identifies pdfs or .doc* files on a page
+* `get_page_csv` identifies spreadsheet links
 
 ## Examples
 
@@ -90,8 +160,7 @@ The code below identifies all the pdf reports on the page.
 ```{r}
 urls <- "https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins-for-2018"
 
-get_page_links(urls) %>%
-  .[grepl("pdf$", .)] %>%
+get_page_docs(urls) %>%
   head(10) %>%
   unique()
 
@@ -124,21 +193,21 @@ urls <- "https://www.gov.uk/government/publications/gp-in-hours-weekly-bulletins
 
 get_page_links(urls) %>%
   .[grepl("xls.?$", .)] %>%
-  head(10) %>%
+  head(4) %>%
   unique() %>%
-  map(., ~download(.x, destfile = basename(.x)))
+  map(., ~downloader::download(.x, destfile = basename(.x)))
   
 
 ```
 
 Having downloaded the reports or spreadsheets it is now straightforward to import them for further analysis.
 
-```{r}
+```{r, eval = FALSE}
 
 library(readxl)
 files <- list.files(pattern = ".xls")
 
-data <- map(files, ~(read_excel(.x,  sheet = "Local Authority", na = "*", 
+data <- purrr::map(files[2], ~(read_excel(.x,  sheet = "Local Authority", na = "*", 
     skip = 4)))
 
 head(data)
@@ -211,7 +280,7 @@ corp <- corpus(blog_text2$text)
 dfm <- dfm(corp, ngrams = 2, remove = c("government_licence", "open_government", "public_health", "official_blog", "blog_public", "health_england", "cancel_reply", "content available", "health_blog", "licence_v", "best_wishes", "otherwise_stated", "except_otherwise", "friday_messages", "best_wishes", 
                                         "available_open"))
 
-textplot_wordcloud(dfm)
+textplot_wordcloud(dfm, color = viridis::magma(10))
 
 ```
 
@@ -248,7 +317,7 @@ We have added a `get_pq` function built on the `hansard` package to extract PQs 
 ```{r pqs}
 
 
-pqs <- get_pqs(start_date = "2018-10-01")
+pqs <- get_pqs(start_date = "2019-01-01")
 
 head(pqs)
 
@@ -276,11 +345,11 @@ We can use the toolkit to extract NICE Public Health Guidance as follows:
 
 * Then create a full URL for recommendations
 
-* The extract the text
+* Then extract the text
 
 
 
-```{r}
+```{r eval = FALSE}
 
 
 url <- "https://www.nice.org.uk/guidance/published?type=ph"
@@ -294,4 +363,15 @@ head(recommendations) %>%
 
 ```
 
+```{r}
+
+
+search <- "google analytics understanding users"
+
+g <- googlesearchR(search, n = 10)
+
+g[13] %>% as.character() %>% get_page_text(.) %>%
+
+
+```
 
