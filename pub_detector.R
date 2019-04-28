@@ -11,9 +11,12 @@
 search <- "child health profile"
 google <- googlesearchR(search, n = 20)
 
-reports <- google[14] %>%
+reports <- google[10] %>%
   as.character() %>%
   get_page_docs() %>%
+  
+
+%>%
   purrr::map(., ~(paste0("https://www.wirralintelligenceservice.org", .x))) 
 
 

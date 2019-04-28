@@ -6,6 +6,17 @@
 
 
 
+#' Get an interactive datatable of PHE resources on GOV.UK
+#'
+#' @param url 
+#' @param pages 
+#' @param n 
+#'
+#' @return Returns a datatable of PHE resources
+#' 
+#'
+#' @examples
+#' df <- get_phe_catalogue(n = 100)
 get_phe_catalogue <- function(url = "https://www.gov.uk/government/publications?departments%5B%5D=public-health-england", pages = 2:n, n= 100) {
   
   library(Rcrawler)

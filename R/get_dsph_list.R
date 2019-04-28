@@ -1,6 +1,17 @@
 
 
-get_dsph_england <- function(url){
+#' Get a list of Directors of Public Health in England
+#'
+#' @param url 
+#'
+#' @return A dataframe of local authority districts and their current Director of Public Health
+#' 
+#'
+#' @examples
+#' 
+#' dsph <- get_dsph_england()
+#' 
+get_dsph_england <- function(url = "https://www.gov.uk/government/publications/directors-of-public-health-in-england--2/directors-of-public-health-in-england"){
   
   suppressWarnings(require(tidyverse)); require(rvest); require(dplyr)
   url <- "https://www.gov.uk/government/publications/directors-of-public-health-in-england--2/directors-of-public-health-in-england"

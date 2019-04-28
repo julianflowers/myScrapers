@@ -1,7 +1,20 @@
-## page visualisation highlighting keywords
+## Page visualisation highlighting keywords
 ## 
 #
 
+#' Visualise text pages with keywords highlighted as a page plot
+#'
+#' @param text 
+#' @param keyword 
+#' @param title 
+#'
+#' @return A page visualisation where selected keywords are highlighted
+#' 
+#'
+#' @examples
+#' 
+#' page_viz(text, keyword = "fingertips", title = "Mentions of Fingertips in document")
+#' 
 page_viz <- function(text, keyword, title = "Title"){
   require(ggpage)
   

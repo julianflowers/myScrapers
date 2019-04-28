@@ -9,12 +9,13 @@ require(pacman)
 p_load(tidyverse, quanteda, textrank, tidytext, lettercase, dplyr)
 
 ## tokenise into sentences
+## 
 sentences <- tibble(text = text) %>%
   unnest_tokens(sentence, text, token = "sentences") %>%
   mutate(sentence_id = row_number()) %>%
   dplyr::select(sentence_id, sentence)
 
-## tokenise sentences into workds
+## tokenise sentences into words
 article_words <- sentences %>%
   unnest_tokens(word, sentence)
 

@@ -19,8 +19,8 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
   corpus <- corpus(links_df$.x..i..)
   docvars(corpus, "group") <- links_df$date
   
-  dfm <- dfm(corpus, remove = stopwords("en")) 
-  lookup <- dfm_lookup(dfm, dictionary = dictionary, ngram = 1:n)
+  dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n ) 
+  lookup <- dfm_lookup(dfm, dictionary = dictionary)
   lookup
   
 }
