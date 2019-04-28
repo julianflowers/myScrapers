@@ -1,4 +1,4 @@
-## gets term frequncy in web texts for a dictionary of terms
+## gets term frequency in web texts for a dictionary of terms
 
 get_blog_term_frequency <- function(links, dictionary, n = 1){
   
@@ -11,7 +11,7 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
   
   links_df <- links %>%
     #.[grepl("pdf", .)] %>%
-    purrr::map(., ~(get_page_text(.x))) %>%
+    purrr::map(., ~(safe_readtext(.x))) %>%
     purrr::map(., ~(paste(.x, collapse = ","))) %>%
     purrr::map(., data.frame) %>%
     bind_rows(., .id = "date") 
@@ -19,8 +19,14 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
   corpus <- corpus(links_df$.x..i..)
   docvars(corpus, "group") <- links_df$date
   
+<<<<<<< HEAD
   dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n ) 
+=======
+  dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n) 
+>>>>>>> 042b6954f8f9a71bdaecf06dc0fa6efd96392d71
   lookup <- dfm_lookup(dfm, dictionary = dictionary)
   lookup
   
 }
+
+
