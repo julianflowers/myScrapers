@@ -1,0 +1,107 @@
+---
+title: "Using R to evaluate impact of PHE data"
+author: "Julian Flowers"
+date: "12/11/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE, message = FALSE, warning = FALSE, collapse = TRUE)
+
+library(pacman)
+p_load(myScrapers, tidyverse, quanteda)
+
+```
+
+## Create lookup table of search terms
+
+The first step is to create of list of terms to lookup in documents. We can use the `create_lookups` function to achieve this. Use can use * as a wild card and create categories of search terms.
+
+```{r search}
+
+lookups <- create_lookup(phe = c("phe", "public_health*"), 
+                         cancer = "cancer*",
+                         `mental health` = "mental*", 
+                         profile = "profile*", 
+                         fingertips = "fingertips*", 
+                         phof = c("phof*", "outcome*_frame*"), 
+                         local = "local*", 
+                         heart = c("cardi*", "heart*"), 
+                         stp = "stp*", 
+                         harlow = "harlow", 
+                         gp = "gp*", 
+                         surveillnace = "surveil*")
+
+lookups
+
+```
+
+## Obtaining text to analyse
+
+We'll use Duncan Selbie's friday messages which we can extarct and clean as follows using the `get_page_links` and `get_page_text` functions.
+
+```{r}
+library(magrittr)
+
+url_ds <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
+url_ds1 <- paste0(url_ds, "page/", 2:8)
+urls_ds <- c(url_ds, url_ds1)
+
+links <- map(urls_ds, ~(get_page_links(.x))) 
+
+friday_message <- links %>% flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
+
+
+```
+
+
+```{r}
+
+results <- get_blog_term_frequency(l = friday_message, d = lookups, n = 2)
+
+head(results, 10)
+
+results %>%
+  data.frame() %>%
+  gather(term, count, 2:ncol(.)) %>%
+  ggplot(aes(term, rev(forcats::fct_inorder(document)), fill = log(count+ .0005 ))) +
+    geom_tile() +
+  viridis::scale_fill_viridis(option = "A") +
+  coord_equal() +
+  coord_flip() +
+  scale_y_discrete(position = "bottom") +
+  theme(axis.text.x = element_text(angle = 90, size = 6, hjust = 0))
+
+```
+
+## Mention rate
+
+We can calculate a mention rate - the proportion of texts containing our search terms.
+
+```{r}
+
+results %>%
+  data.frame() %>%
+  gather(term, count, 2:ncol(.)) %>%
+  group_by(term) %>%
+  mutate(mention = ifelse(count >0, 1, 0)) %>%
+  summarise(`mention rate` = round(100 *mean(mention), 1)) %>%
+  arrange(desc(`mention rate`))
+
+
+```
+
+
+```{r}
+
+
+files <- list.files(pattern = "pdf")
+
+head(files)
+
+test3 <- get_text_term_frequency(files[1:9], lookups, 2)
+
+test3
+
+```
+
