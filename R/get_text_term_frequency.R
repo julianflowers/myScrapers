@@ -5,8 +5,7 @@ get_text_term_frequency <- function(l, d, n = 1){
   require(tidyverse)
   require(quanteda)
   require(readtext)
-  require(myScrapers)
-  
+
   safe_readtext <- safely(readtext)
   
   links_df <- l %>%
@@ -15,7 +14,7 @@ get_text_term_frequency <- function(l, d, n = 1){
     purrr::map(., "result") %>%
     purrr::map_df(., data.frame)
 
-  corpus <- corpus(links_df$text)
+  corpus <- corpus(links_df, text_field = "text")
 
   dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n) 
   lookup <- dfm_lookup(dfm, dictionary = d)
@@ -23,4 +22,13 @@ get_text_term_frequency <- function(l, d, n = 1){
   
 }
 
+links_df <- files %>%
+  .[grepl("pdf", .)] %>%
+  purrr::map(., ~(safe_readtext(.x))) %>%
+  purrr::map(., "result") %>%
+  purrr::map_df(., data.frame)
 
+str(links_df)
+corpus(links_df, text_field = "text")
+
+str(links_df)

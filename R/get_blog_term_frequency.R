@@ -5,8 +5,7 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
   require(tidyverse)
   require(quanteda)
   require(readtext)
-  require(myScrapers)
-  
+
   safe_readtext <- safely(get_page_text)
   
   links_df <- links %>%
