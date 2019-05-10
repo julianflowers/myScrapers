@@ -15,16 +15,12 @@ get_blog_term_frequency <- function(links, dictionary, n = 1){
     purrr::map(., data.frame) %>%
     bind_rows(., .id = "date") 
   
-  corpus <- corpus(links_df$.x..i..)
-  docvars(corpus, "group") <- links_df$date
+corpus <- corpus(links_df$.x..i..)
+docvars(corpus, "group") <- links_df$date
   
-<<<<<<< HEAD
-  dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n ) 
-=======
-  dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n) 
->>>>>>> 042b6954f8f9a71bdaecf06dc0fa6efd96392d71
-  lookup <- dfm_lookup(dfm, dictionary = dictionary)
-  lookup
+dfm <- dfm(corpus, remove = stopwords("en"), ngrams = 1:n) 
+lookup <- dfm_lookup(dfm, dictionary = dictionary)
+lookup
   
 }
 

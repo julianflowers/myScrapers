@@ -22,13 +22,3 @@ get_text_term_frequency <- function(l, d, n = 1){
   
 }
 
-links_df <- files %>%
-  .[grepl("pdf", .)] %>%
-  purrr::map(., ~(safe_readtext(.x))) %>%
-  purrr::map(., "result") %>%
-  purrr::map_df(., data.frame)
-
-str(links_df)
-corpus(links_df, text_field = "text")
-
-str(links_df)

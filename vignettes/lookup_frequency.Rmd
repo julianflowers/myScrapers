@@ -15,9 +15,9 @@ p_load(myScrapers, tidyverse, quanteda)
 
 ## Create lookup table of search terms
 
-The first step is to create of list of terms to lookup in documents. We can use the `create_lookups` function to achieve this. Use can use * as a wild card and create categories of search terms.
+The first step is to create of list of terms to lookup in documents. We can use the `create_lookups` function to achieve this. You can use * as a wild card and create categories of search terms.
 
-```{r search}
+```{r search-terms}
 
 lookups <- create_lookup(phe = c("phe", "public_health*"), 
                          cancer = "cancer*",
@@ -25,12 +25,14 @@ lookups <- create_lookup(phe = c("phe", "public_health*"),
                          profile = "profile*", 
                          fingertips = "fingertips*", 
                          phof = c("phof*", "outcome*_frame*"), 
-                         local = "local*", 
+                         local = "local_auth*", 
                          heart = c("cardi*", "heart*"), 
                          stp = "stp*", 
                          harlow = "harlow", 
                          gp = "gp*", 
-                         surveillnace = "surveil*")
+                         surveillance = "surveil*",
+                         sugar = "sugar*", 
+                         tobacco = c("e-cig*", "smok*"))
 
 lookups
 
@@ -38,24 +40,24 @@ lookups
 
 ## Obtaining text to analyse
 
-We'll use Duncan Selbie's friday messages which we can extarct and clean as follows using the `get_page_links` and `get_page_text` functions.
+We'll use Duncan Selbie's friday messages which we can extract and clean as follows using the `get_page_links` and `get_page_text` functions.
 
-```{r}
+```{r blogs}
 library(magrittr)
 
 url_ds <- "https://publichealthmatters.blog.gov.uk/category/duncan-selbie-friday-message/"
 url_ds1 <- paste0(url_ds, "page/", 2:8)
 urls_ds <- c(url_ds, url_ds1)
 
-links <- map(urls_ds, ~(get_page_links(.x))) 
+links <- purrr::map(urls_ds, ~(get_page_links(.x))) 
 
-friday_message <- links %>% flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
+friday_message <- links %>% purrr::flatten() %>%.[grepl("duncan-selbies-friday-message", .)] %>% .[!grepl("comments", .)] %>% unique()
 
 
 ```
 
 
-```{r}
+```{r term-frequency, fig.width=10}
 
 results <- get_blog_term_frequency(l = friday_message, d = lookups, n = 2)
 
@@ -66,11 +68,12 @@ results %>%
   gather(term, count, 2:ncol(.)) %>%
   ggplot(aes(term, rev(forcats::fct_inorder(document)), fill = log(count+ .0005 ))) +
     geom_tile() +
-  viridis::scale_fill_viridis(option = "A") +
+  viridis::scale_fill_viridis(option = "B") +
   coord_equal() +
   coord_flip() +
   scale_y_discrete(position = "bottom") +
-  theme(axis.text.x = element_text(angle = 90, size = 6, hjust = 0))
+  theme(axis.text.x = element_text(angle = 90, size = 12, hjust = 0), 
+        axis.text.y = element_text(size = 12))
 
 ```
 
@@ -78,7 +81,7 @@ results %>%
 
 We can calculate a mention rate - the proportion of texts containing our search terms.
 
-```{r}
+```{r mention-rate}
 
 results %>%
   data.frame() %>%
@@ -92,14 +95,18 @@ results %>%
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 
+here::set_here()
 
-files <- list.files(pattern = "pdf")
+here::here()
+
+source("../R/get_text_term_frequency.R")
+files <- list.files(path = here::here(), pattern = "pdf")
 
 head(files)
 
-test3 <- get_text_term_frequency(files[1:9], lookups, 2)
+test3 <- get_text_term_frequency(l = files, d = lookups, 2)
 
 test3
 
