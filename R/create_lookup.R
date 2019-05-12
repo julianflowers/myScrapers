@@ -16,9 +16,9 @@
 
 create_lookup <- function(...){
   
-  require(quanteda)
+  library(quanteda)
   
-  dict <- dictionary(list(
+  dict <- quanteda::dictionary(list(
     
     ...
     

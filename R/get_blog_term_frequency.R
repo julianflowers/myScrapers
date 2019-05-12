@@ -2,7 +2,8 @@
 
 get_blog_term_frequency <- function(links, dictionary, n = 1){
   
-  require(tidyverse)
+  require(dplyr)
+  require(purrr)
   require(quanteda)
   require(readtext)
 

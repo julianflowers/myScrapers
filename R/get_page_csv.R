@@ -14,7 +14,7 @@
 get_page_csvs <- function(url){
   
   require(httr)
-  require(tidyverse)
+  require(dplyr)
   require(rvest)
   
   csv <- GET(url) %>%

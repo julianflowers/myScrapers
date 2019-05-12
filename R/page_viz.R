@@ -16,6 +16,7 @@
 #' page_viz(text, keyword = "fingertips", title = "Mentions of Fingertips in document")
 #' 
 page_viz <- function(text, keyword, title = "Title"){
+  
   require(ggpage)
   
   ggpage_build(text) %>%

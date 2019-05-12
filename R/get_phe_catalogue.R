@@ -20,11 +20,8 @@
 get_phe_catalogue <- function(url = "https://www.gov.uk/search/all?organisations%5B%5D=public-health-england", n= 298) {
   
   library(Rcrawler)
-  library(myScrapers)
   library(rvest)
-  
-  library(tidyverse)
-  
+
   library(stringr)
   
   require(dplyr)
@@ -57,11 +54,6 @@ get_phe_catalogue <- function(url = "https://www.gov.uk/search/all?organisations
            link = paste0("<a href =",  link,  ">Link</a>")) %>%
     dplyr::filter(!is.na(group))
   
-  phe_national_pubs_table <- phe_national_pubs %>%
-    #dplyr::filter(!is.na(group)) %>%
-    DT::datatable(rownames = FALSE, escape = FALSE, extensions = 'Buttons', options = list(
-      dom = 'Bfrtip',
-      buttons = c('csv', 'excel', 'pdf')))
   
 }
 

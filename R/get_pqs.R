@@ -6,8 +6,7 @@ get_pqs <- function(start_date){
   
   require(hansard)
   require(tidyverse)
-  require(DT)
-  
+
   cat("Please wait...")
   
   dhsc2018 <- hansard_all_answered_questions(start_date = start_date) %>% dplyr::filter(str_detect(answering_body, "[Hh]ealth"))

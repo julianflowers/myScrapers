@@ -1,20 +1,11 @@
 
 ## bigram maker
 
-#' Generate bigrams without stopwords from any text
-#'
-#' @param df A dataframe containing text to be processed
-#' @param text The text variable to be processed
-#'
-#' @return A dataframe of bigrams
-#' 
-#'
-#' @examples 
-#' create_bigrams(df, text)
-#' 
+
 create_bigrams <- function(df, text){
   require(tidytext)
-  require(tidyverse)
+  require(dplyr)
+  require(Matrix)
  text <- enquo(text)
   df %>%
     unnest_tokens(bigram, !!text, token = "ngrams", n = 2) %>%

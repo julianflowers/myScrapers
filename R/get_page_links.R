@@ -4,7 +4,7 @@
 get_page_links <- function(url){
   
   require(httr)
-  require(tidyverse)
+  require(dplyr)
   require(rvest)
   
   links <- GET(url) %>%

@@ -4,7 +4,7 @@
 get_page_text <- function(url){
   
   require(httr)
-  require(tidyverse)
+  require(dplyr)
   require(rvest)
   
   text <- GET(url) %>%

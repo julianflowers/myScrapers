@@ -4,7 +4,7 @@
 get_page_docs <- function(url){
   
   require(httr)
-  require(tidyverse)
+  require(dplyr)
   require(rvest)
   
   docs <- GET(url) %>%

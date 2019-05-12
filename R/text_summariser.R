@@ -5,8 +5,11 @@ text_summariser <- function(text, n = 6){
   
 #cat("Given a text returns a summary (most important sentences) based on Google's pagerank algorithm. Set n to change no of sentences in summary.\n NB may take some time to run")  
 
-require(pacman)
-p_load(tidyverse, quanteda, textrank, tidytext, lettercase, dplyr)
+require(dplyr)
+require(quanteda)
+require(textrank)
+require(tidytext)
+  
 
 ## tokenise into sentences
 ## 

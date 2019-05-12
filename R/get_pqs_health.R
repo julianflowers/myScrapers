@@ -5,9 +5,9 @@
 get_pqs_health <- function(start_date, end_date){
   
   require(hansard)
-  require(tidyverse)
-  require(DT)
-  
+  require(dplyr)
+  require(tibble)
+
   cat("Please wait...")
   
   dhsc2018 <- hansard_all_answered_questions(start_date = start_date, end_date = end_date) %>% dplyr::filter(str_detect(answering_body, "[Hh]ealth"))

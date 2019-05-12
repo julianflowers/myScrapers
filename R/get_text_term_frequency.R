@@ -2,9 +2,10 @@
 
 get_text_term_frequency <- function(l, d, n = 1){
   
-  require(tidyverse)
+  require(dplyr)
   require(quanteda)
   require(readtext)
+  require(purrr)
 
   safe_readtext <- safely(readtext)
   
