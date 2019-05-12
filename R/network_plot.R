@@ -2,7 +2,8 @@
 
 create_network_plot <- function(ds, title = "Network plot of documents", subtitle = "", layout = "fr", alpha = 0.2, colour = "blue", textsize = 3){
   
-  require(tidyverse, quietly = TRUE)
+  require(dplyr)
+  require(ggplot2)
   require(igraph)
   require(ggraph)
   
