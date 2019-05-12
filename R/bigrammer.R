@@ -9,8 +9,6 @@
 #' @return A dataframe of bigrams
 #' 
 #'
-#' @examples 
-#' create_bigrams(df, text)
 #' 
 create_bigrams <- function(df, text){
   require(tidytext)
