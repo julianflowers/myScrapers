@@ -6,6 +6,7 @@ pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pub
   require(dplyr)
   require(purrr)
   require(tibble)
+  require(glue)
   
   search <- search
   n <- n
