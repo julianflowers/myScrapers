@@ -13,7 +13,8 @@
 #' 
 get_dsph_england <- function(url = "https://www.gov.uk/government/publications/directors-of-public-health-in-england--2/directors-of-public-health-in-england"){
   
-  suppressWarnings(require(tidyverse)); require(rvest); require(dplyr)
+  require(rvest)
+  require(dplyr)
   url <- "https://www.gov.uk/government/publications/directors-of-public-health-in-england--2/directors-of-public-health-in-england"
   
   dsph <- read_html(url)
