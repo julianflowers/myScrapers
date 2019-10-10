@@ -30,7 +30,7 @@ fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
 DOI = fetch@PMID
-abstracts <- as.tibble(cbind(title = fetch@ArticleTitle,
+abstracts <- as_tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
                            journal = fetch@Title,
                            DOI,
@@ -70,8 +70,10 @@ authors <- authors %>%
 abstracts <- left_join(abstracts, authors)
 }
 ## returns latest 1000 abstracts unless n value changed   
-abstracts        
+out <- list(abstracts = abstracts, n_articles = s1@count, search = s1@querytranslation)       
 }
+
+
 
 
 
