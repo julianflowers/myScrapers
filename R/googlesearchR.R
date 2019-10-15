@@ -26,6 +26,8 @@ googlesearchR <- function(search, n = 100 ){
   links <- str_extract_all(links, "^http.+")
   links <- purrr::flatten(links)
   links <- links[12:length(links)]
+  
+  Sys.sleep(30)
   print(links)
   
 }
