@@ -1,13 +1,14 @@
 ## search europe PMC and return abstracts
 
 
-epmc_full_search <- function(search, limit = 1000, synonym = TRUE){
+get_epmc_abstracts <- function(search, limit = 1000, synonym = TRUE){
   
   if(!require("europepmc"))install.packages("europepmc")
   require(europepmc)
   require(dplyr)
   if(!require("tictoc"))install.packages("tictoc")
   require(tictoc)
+  require(purrr)
   
   tic()
   search <- epmc_search(search, limit = limit, synonym = synonym)
@@ -35,9 +36,10 @@ epmc_full_search <- function(search, limit = 1000, synonym = TRUE){
     mutate(keywords = paste(mesh, collapse = "; ")) %>%
     ungroup()
   
-  out
-  toc()
+  toc <- toc()
+  
+  return <- list(df = out, tome = toc)
 }
 
-test <- epmc_full_search("kmeans", limit = 50)
+abs <- get_epmc_abstracts("GBD")
 
