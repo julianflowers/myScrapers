@@ -27,7 +27,7 @@ googlesearchR <- function(search, n = 100 ){
   links <- purrr::flatten(links)
   links <- links[12:length(links)]
   
-  Sys.sleep(30)
+  Sys.sleep(time = 20)
   print(links)
   
 }
