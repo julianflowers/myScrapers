@@ -41,5 +41,4 @@ get_epmc_abstracts <- function(search, limit = 1000, synonym = TRUE){
   return <- list(df = out, tome = toc)
 }
 
-abs <- get_epmc_abstracts("GBD")
 

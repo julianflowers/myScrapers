@@ -14,9 +14,11 @@ get_phe_pqs <- function(start_date){
   phe_qn <- dplyr::filter(dhsc2018, str_detect(answer_text_value, "Public Health England|PHE")) %>%
     dplyr::select(answer_date = date_of_answer_value, question_text,  answer_text = answer_text_value, answering_member = answering_member_printed_value,
            hansard_category = hansard_heading_value) %>%
-    mutate(answer_text = str_remove(answer_text, "\\<p\\>"))
+    mutate(answer_text = str_remove(answer_text, "\\<p\\>")) %>%
+    distinct()
   
   phe_qn %>% as.tibble()
   
 }
 
+pq <- get_phe_pqs("2019-09-01")
