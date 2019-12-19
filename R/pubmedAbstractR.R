@@ -1,6 +1,6 @@
 ## function for downloading abstracts from pubmed
 
-pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pubmed", keyword = FALSE, authors = FALSE){
+pubmedAbstractR <- function(search, n = 1000, ncbi_key = NA, start = 2000, end = end, db = "pubmed", keyword = FALSE, authors = FALSE){
   
   require(RISmed)
   require(dplyr)
@@ -8,7 +8,9 @@ pubmedAbstractR <- function(search, n = 1000, start = 2000, end = end, db = "pub
   require(tibble)
   require(glue)
   
-  search <- search
+  search <- sprintf("%s&api_key=%s", gsub(" ", "+", search), 
+                       ncbi_key)
+
   n <- n
   start <- start
   end <- end
@@ -29,6 +31,7 @@ print(comment)
 fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 #abstracts <- bibliometrix::pubmed2df(fetch)
   
+
 DOI = fetch@PMID
 abstracts <- as_tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
