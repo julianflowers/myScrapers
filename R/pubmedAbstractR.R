@@ -77,9 +77,4 @@ out <- list(abstracts = abstracts, n_articles = s1@count, search = s1@querytrans
 }
 
 
-search <- "prisma"
-
-out <- pubmedAbstractR(search = search, end = 2019)
-
-
 
