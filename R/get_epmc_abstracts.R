@@ -38,7 +38,7 @@ get_epmc_abstracts <- function(search, limit = 1000, synonym = TRUE){
   
   toc <- toc()
   
-  return <- list(df = out, tome = toc)
+  return <- list(df = out, time = toc)
 }
 
 
