@@ -1,6 +1,6 @@
 ## abstract topics
 
-abstract_topics <- function(k = 10, data = x){
+abstract_topics <- function(k = 10, x){
   
 dtm <- document_term_frequencies(x, document = "topic_id", term = "term")
 dtm <- document_term_matrix(x = dtm)
