@@ -1,6 +1,6 @@
 ## topic model with nounphrases
 
-abstract_nounphrases <- function(annotated){
+abstract_nounphrases <- function(x){
   
   require(udpipe)
   
