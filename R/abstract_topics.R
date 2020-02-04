@@ -15,7 +15,7 @@ topicterminology <- predict(m, type = "terms", min_posterior = 0.10, min_terms =
 scores <- predict(m, newdata = dtm, type = "topics", 
                   labels = paste("text", letters[1:k]))
 
-out <- list(m, topicterminology, scores)
+out <- list(model = m, terms = topicterminology, scores = scores)
 
 }
 
