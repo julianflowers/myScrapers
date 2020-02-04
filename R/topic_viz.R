@@ -1,7 +1,7 @@
 ## abstract topic visualisation
 
 
-abstract_topic_viz <-function(anno, topic){
+abstract_topic_viz <-function(x, m, scores, n = 1){
 
 
 library(igraph)
@@ -12,9 +12,9 @@ library(qgraph)
 scores <- scores %>%
   mutate(doc_id = as.numeric(doc_id))
 
-x_topic <- x %>% left_join(scores, by = c("topic_id" = "doc_id"))
+x_topic <- np %>% left_join(scores, by = c("topic_id" = "doc_id"))
 topicterminology <- predict(m, type = "terms", min_posterior = 0.05, min_terms = 20)
-termcorrs <- subset(x_topic, topic %in% topic & lemma %in% topicterminology[[topic]]$term)
+termcorrs <- subset(x_topic, topic %in% n & lemma %in% topicterminology[[n]]$term)
 termcorrs <- document_term_frequencies(termcorrs, document = "topic_id", term = "lemma")
 termcorrs <- document_term_matrix(termcorrs)
 termcorrs <- dtm_cor(termcorrs)
@@ -26,3 +26,4 @@ qgraph(termcorrs, layout = "spring", labels = colnames(termcorrs), directed = FA
 
 }
 
+t <- abstract_topic_viz(np, m = topics$model, scores = topics$scores, n = 6) 
