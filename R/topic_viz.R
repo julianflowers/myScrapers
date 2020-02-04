@@ -26,4 +26,3 @@ qgraph(termcorrs, layout = "spring", labels = colnames(termcorrs), directed = FA
 
 }
 
-t <- abstract_topic_viz(np, m = topics$model, scores = topics$scores, n = 6) 
