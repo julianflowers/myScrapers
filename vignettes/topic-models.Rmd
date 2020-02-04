@@ -1,0 +1,152 @@
+---
+title: "Topic modelling Pubmed abstracts using NLP tools"
+author: "Julian Flowers"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Topic modeling Pubmed abstracts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  warning = FALSE
+)
+
+if(!require(myScrapers))
+devtools::install_github("julianflowers/myScrapers", force = TRUE)
+library(myScrapers)
+library(tidyverse)
+library(udpipe)
+library(topicmodels)
+
+
+```
+
+This vignette shows how to extract abstracts from Pubmed and perform simple topic modelling on them. It uses functions in the `myScrapers` package which can be downloaded as below.
+
+```{r}
+if(!require(myScrapers))devtools::install_github("julianflowers/myScrapers")
+library(myScrapers)
+```
+
+
+## Obtaining article abstracts
+
+The first step is to search Pubmed. We use the `pubmedAbstractR` function. This is a wrapper for `RISmed` and interacts with the NCBI E-utilities API. It takes 5 arguments:
+
+* *start* = the start year for searching. The default is 2000
+* *end* = the end year for searching
+* *search* = the ssearch or query string
+* *n* = the number of abstracts to be downloaded. The default is 1000
+
+In addition it is recommended to obtain an API key for NCBI. Instructions on how to obtain a key is available from [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/). Once you have a key you should store it as an environment variable.
+
+There are two other arguments to extract authors and mesh headings (keywords). These are set to FALSE by default.
+
+In this example we show how to search for articles on *population health management*.
+
+```{r pubmed-searching}
+
+## load key
+
+key <- Sys.getenv("ncbi_key")
+
+## initialise - initially with n = 1 - this will tell us how many abstracts out query returns
+
+query <- "population health management[tw]"
+n <- 1
+end <- 2020
+
+## search
+
+out <- pubmedAbstractR(search = query, n = n, end = end, ncbi_key = key)
+
+```
+
+The query returns `r out$n_articles` abstracts. The search term is translated by the API into `r out$search`
+
+Let us download them.
+
+```{r, cache = TRUE}
+n <- out$n_articles
+
+results <- pubmedAbstractR(search = query, n = n, end = end, ncbi_key = key)
+
+head(results$abstracts)
+
+```
+
+## Topic modeling
+
+Topic modelling is a form of unsepervised machine learning that cn help us classify texts. There are two main packages in R for this, `topicmodels` and `stm`. In this workflow we are using an NLP package `udpipe` to tokemnise and annote texts, and `topicmodels` to classify and visualise documents.
+
+To facilitate this process we have added 4 functions to the `myScrapers` package. These are:
+
+* `annotate_abstracts`. This parses and annotate abstracts - splits the abstracts into individual words (tokens) and adds parts of speech to each token. The function downloads the English language model for udpipe. It takse two arguments - abstract text, and abstract identifier (pmid).
+* `abstract_nounphrases`. This creates nounphrases - compound terms
+* `abstract_topics`. This does the necessary processing on the annotated data to convert it to a form that `topicmodels` can run. It outputs the topic assignment for each abstract and the top terms form each topic/ The number of topics (k) is specified by the user.
+* `topic_viz`. This creates a network visualisation for a topic.
+
+Let's illustrate how the flow works.
+
+### Annotation
+
+The first step is to parse the abstracts. Note: this can take some time
+
+```{r cache = TRUE}
+library(udpipe)
+anno <- annotate_abstracts(abstract = results$abstracts$abstract, pmid = results$abstracts$DOI)
+
+head(anno)
+
+
+```
+
+### Creating nounphrases
+
+This step takes the annotated data created in the previous step and creates phrases. This can enrich the topic modelling step but can be missed out. 
+
+```{r create-nounphrases}
+
+np <- abstract_nounphrases(anno)
+
+np %>%
+  filter(!is.na(term)) %>%
+  head(10) %>%
+  select(doc_id, sentence, term)
+
+```
+
+### Create topics
+
+```{r}
+
+topics <- abstract_topics(k = 10, x = np)
+topics$model
+
+
+```
+
+### Visualising topics
+
+```{r}
+
+topic <- myScrapers::abstract_topic_viz(x = np, m = topics$model, scores = topics$scores, n = 10)
+
+```
+
+#### Visualising all topics
+
+```{r}
+
+figures <- map(1:10, ~(abstract_topic_viz(x = np, m = topics$model, scores = topics$scores, n = .x)))
+
+
+
+
+```
+
