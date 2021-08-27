@@ -1,6 +1,6 @@
 ## function for downloading abstracts from pubmed
 
-pubmedAbstractR <- function(search, n = 1000, ncbi_key = NA, start = 2000, end = end, db = "pubmed", keyword = FALSE, authors = FALSE){
+pubmedAbstractR <- function(search, n = 1000, ncbi_key = NA, start = 2000, end = end, db = "pubmed", keyword = FALSE, authors = FALSE, citations = FALSE){
   
   require(RISmed)
   require(dplyr)
@@ -35,23 +35,28 @@ fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 DOI = fetch@PMID
 abstracts <- as_tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
-                           journal = fetch@Title,
-                           DOI,
-                           year = fetch@YearPubmed))
+                           journal = fetch@ISOAbbreviation,
+                           doi = fetch@DOI, 
+                          pmid = fetch@PMID, 
+                          year = fetch@YearPubmed))
+                         
+
 ## add MeSH headings
 
 if(keyword == TRUE){
 mesh <- purrr::map(fetch@Mesh,  "Heading") %>%
   purrr::map(., data.frame) 
 
-DOI -> names(mesh)
+pmid -> names(mesh)
 
 mesh <- mesh %>%
-  bind_rows(., .id = "DOI") %>%
+  bind_rows(., .id = "pmid") %>%
   rename(keyword = .x..i..) %>%
   data.frame()
 
-abstracts <- left_join(abstracts, mesh)
+abstracts <- left_join(abstracts, mesh) %>%
+  group_by(title, abstract, journal, doi, year, pmid) %>%
+  summarise(keyword = paste(keyword, collapse = ", "))
 }
 ## add authors
 if(authors == TRUE){
@@ -60,17 +65,40 @@ authors <- purrr::map(fetch@Author, extract,  c("LastName", "Initials", "order")
   purrr::map(., data.frame)
 
 
-DOI = fetch@PMID
-DOI -> names(authors)
+pmid <- fetch@PMID
+pmid -> names(authors)
 
 authors <- authors %>%
-  bind_rows(., .id = "DOI") %>%
+  bind_rows(., .id = "pmid") %>%
   data.frame()
 
 ## abstracts
 
 
-abstracts <- left_join(abstracts, authors)
+abstracts <- left_join(abstracts, authors) 
+}
+
+## add citatons
+  
+if(citations == TRUE){
+  citations <- purrr::map(fetch@Citations, "Reference") %>%
+      purrr::map(., data.frame)
+    
+    
+pmid <- fetch@PMID
+    
+    citations <- citations %>%
+      bind_rows(., .id = "pmid") %>%
+      data.frame() %>%
+      select(pmid, citation = .x..i..) %>%
+      mutate(citation = as.character(citation))
+  
+## abstracts
+
+
+abstracts <- left_join(abstracts, citations, by = "pmid") %>%
+  group_by(title, abstract, journal, doi, year, pmid) %>%
+  summarise(citation = paste(citation, collapse = ", "))
 }
 ## returns latest 1000 abstracts unless n value changed   
 out <- list(abstracts = abstracts, n_articles = s1@count, search = s1@querytranslation)       
