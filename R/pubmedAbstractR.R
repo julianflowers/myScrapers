@@ -36,8 +36,8 @@ DOI = fetch@PMID
 abstracts <- as_tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
                            journal = fetch@ISOAbbreviation,
-                           doi = fetch@DOI,
-                          pmid = fetch@pmid,
+                           DOI = fetch@DOI,
+                          pmid = fetch@PMID,
                            year = fetch@YearPubmed))
 ## add MeSH headings
 
