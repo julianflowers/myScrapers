@@ -35,8 +35,9 @@ fetch <- EUtilsGet(s1, type = "efetch", db = "pubmed")
 DOI = fetch@PMID
 abstracts <- as_tibble(cbind(title = fetch@ArticleTitle,
                           abstract = fetch@AbstractText,
-                           journal = fetch@Title,
-                           DOI,
+                           journal = fetch@ISOAbbreviation,
+                           doi = fetch@DOI,
+                          pmid = fetch@pmid,
                            year = fetch@YearPubmed))
 ## add MeSH headings
 
