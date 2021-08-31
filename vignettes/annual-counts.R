@@ -63,3 +63,7 @@ big %>%
   viridis::scale_fill_viridis(direction = -1) +
   theme_minimal()
 
+
+test1 <- get_ss_data(search = "Birding World", n = 100)
+
+
