@@ -1,7 +1,10 @@
 #' ---
-#' title: "Term frequency in titles of journal Ecology"
+#' title: "Term frequency in titles of journals relevant to wildlife conservation"
+#' subtitle: "Pubmed searches"
 #' author: "Julian Flowers"
 #' date: "`r Sys.Date()`"
+#' parameters:
+#'     search: "Animal Conservation"
 
 #' ---
 
@@ -11,7 +14,7 @@ devtools::install_github("julianflowers/myScrapers")
 library(myScrapers)
 library(tidyverse)
 
-search <- "Birding World[ta]"
+search <- paste0(parameters$search, "[ta]")
 
 ncbi_key <- Sys.getenv("ncbi_key")
 
@@ -27,7 +30,8 @@ test <- pubmedAbstractR(search = search, n = n, ncbi_key = ncbi_key, start = sta
 test$abstracts %>%
   count(journal, year) %>%
   ggplot(aes(year, n, colour = journal, group = journal)) +
-  geom_line()
+  geom_line() +
+  viridis::scale_color_viridis(discrete = TRUE)
 
 #' ## keyword parse
 
